@@ -19,6 +19,7 @@ from modules.economic_data import (
     load_all_economic_data,
     INDICATOR_METADATA,
 )
+from modules.news_data import get_economic_news
 
 # Supported countries with India as default (per GEMINI.md)
 SUPPORTED_COUNTRIES = {
@@ -194,7 +195,18 @@ def main() -> None:
 
         st.caption(f"Querying observations from **{selected_years[0]}** to **{selected_years[1]}**.")
 
-        if st.button("🔄 Refresh Data Cache"):
+        st.divider()
+        st.subheader("📰 News Feed Settings")
+        news_mode = st.radio(
+            "News Source",
+            options=["Live News Feed", "Sample Dataset (Offline)"],
+            index=0,
+            help="Live feed retrieves current articles via Google News RSS. Sample dataset provides guaranteed offline articles.",
+        )
+        use_sample_news = (news_mode == "Sample Dataset (Offline)")
+
+        st.divider()
+        if st.button("🔄 Refresh All Data Cache"):
             st.cache_data.clear()
             st.success("Cache cleared! Re-fetching fresh data.")
             st.rerun()
@@ -354,13 +366,64 @@ def main() -> None:
         else:
             st.write("No tabular observations to display.")
 
-    # 6. Section 2: Economic News Placeholder
+    # 6. Section 2: Economic News
     st.divider()
-    st.header("2. Economic News & Categorization")
-    st.info(
-        "📰 **Phase 4 & 5 Target:** Economic news feed with lightweight NLP topic categorization "
-        "(Inflation, Employment, GDP, Monetary Policy) will appear here."
+    st.header(f"2. Economic News — {SUPPORTED_COUNTRIES[selected_country_code]}")
+    st.markdown(
+        "Current reporting and economic news coverage from verified public sources."
     )
+
+    country_short_name = SUPPORTED_COUNTRIES[selected_country_code].split()[0]
+    news_search_query = f"{country_short_name} economy inflation GDP unemployment"
+
+    with st.spinner("Retrieving economic news articles..."):
+        news_payload = get_economic_news(
+            query=news_search_query,
+            use_sample_data=use_sample_news,
+        )
+
+    articles_df = news_payload["articles"]
+    is_sample_news = news_payload["is_sample"]
+    source_label = news_payload["source_type"]
+
+    # Status / Disclaimer per GEMINI.md
+    if is_sample_news:
+        st.warning(
+            "⚠️ **Development Mode (Sample Dataset):** Displaying sample archived articles for offline testing. "
+            "These articles are for development purposes and are not live news."
+        )
+    else:
+        st.success(f"🟢 **{source_label}**: Retrieved {len(articles_df)} deduplicated articles.")
+
+    if news_payload.get("error"):
+        st.info(f"ℹ️ {news_payload['error']}")
+
+    # Keyword Search & Filter
+    search_query = st.text_input(
+        "🔍 Filter articles by keyword (e.g. 'food', 'repo rate', 'jobs', 'manufacturing'):",
+        "",
+        placeholder="Type keyword...",
+    )
+
+    if search_query:
+        kw = search_query.strip().lower()
+        displayed_articles = articles_df[
+            articles_df["title"].str.lower().str.contains(kw) |
+            articles_df["description"].str.lower().str.contains(kw)
+        ]
+    else:
+        displayed_articles = articles_df
+
+    if displayed_articles.empty:
+        st.info("No articles match your search filter.")
+    else:
+        st.caption(f"Showing **{min(len(displayed_articles), 12)}** of **{len(displayed_articles)}** articles.")
+        for _, article in displayed_articles.head(12).iterrows():
+            with st.container():
+                st.markdown(f"##### [{article['title']}]({article['url']})")
+                st.caption(f"📰 **Source:** {article['source']} | 🕒 **Published:** {article['published_at']}")
+                st.write(article["description"])
+                st.divider()
 
     # 7. Section 3: Interpretation & Analysis Placeholder
     st.divider()
