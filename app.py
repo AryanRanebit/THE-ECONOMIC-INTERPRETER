@@ -20,6 +20,7 @@ from modules.economic_data import (
     INDICATOR_METADATA,
 )
 from modules.news_data import get_economic_news
+from modules.text_processing import categorize_dataframe
 
 # Supported countries with India as default (per GEMINI.md)
 SUPPORTED_COUNTRIES = {
@@ -382,47 +383,103 @@ def main() -> None:
             use_sample_data=use_sample_news,
         )
 
-    articles_df = news_payload["articles"]
+    articles_raw = news_payload["articles"]
     is_sample_news = news_payload["is_sample"]
     source_label = news_payload["source_type"]
 
-    # Status / Disclaimer per GEMINI.md
+    # Apply lightweight rule-based NLP categorization
+    articles_df = categorize_dataframe(articles_raw)
+
+    # Status / Transparency Disclaimer per GEMINI.md
     if is_sample_news:
         st.warning(
             "⚠️ **Development Mode (Sample Dataset):** Displaying sample archived articles for offline testing. "
             "These articles are for development purposes and are not live news."
         )
     else:
-        st.success(f"🟢 **{source_label}**: Retrieved {len(articles_df)} deduplicated articles.")
+        st.success(f"🟢 **{source_label}**: Retrieved and categorized {len(articles_df)} deduplicated articles.")
 
     if news_payload.get("error"):
         st.info(f"ℹ️ {news_payload['error']}")
 
-    # Keyword Search & Filter
-    search_query = st.text_input(
-        "🔍 Filter articles by keyword (e.g. 'food', 'repo rate', 'jobs', 'manufacturing'):",
-        "",
-        placeholder="Type keyword...",
-    )
+    # 6.1 Topic Distribution Summary (NLP Educational Insight)
+    if not articles_df.empty and "category" in articles_df.columns:
+        cat_counts = articles_df["category"].value_counts().to_dict()
+        st.markdown("##### 🏷️ Topic Categorization Distribution (Rule-Based NLP)")
+        
+        stat_cols = st.columns(5)
+        stat_categories = [
+            ("Inflation", "🔥"),
+            ("Employment", "👥"),
+            ("GDP and Economic Growth", "📈"),
+            ("Monetary Policy", "🏦"),
+            ("Other Economic News", "📰"),
+        ]
+        for col, (cat_name, cat_icon) in zip(stat_cols, stat_categories):
+            count = cat_counts.get(cat_name, 0)
+            with col:
+                st.metric(label=f"{cat_icon} {cat_name.split()[0]}", value=f"{count} articles")
+
+    st.write("")
+
+    # 6.2 Dual Filter Controls (Category Dropdown + Keyword Search)
+    filter_col1, filter_col2 = st.columns([1, 2])
+    with filter_col1:
+        topic_options = [
+            "All Topics",
+            "Inflation",
+            "Employment",
+            "GDP and Economic Growth",
+            "Monetary Policy",
+            "Other Economic News",
+        ]
+        selected_topic = st.selectbox(
+            "Filter by Economic Topic:",
+            options=topic_options,
+            index=0,
+            help="Filter articles categorized by our rule-based keyword matcher.",
+        )
+
+    with filter_col2:
+        search_query = st.text_input(
+            "Filter by Free-Text Keyword:",
+            "",
+            placeholder="e.g. food, repo rate, manufacturing, budget...",
+        )
+
+    # Apply Filters
+    filtered_df = articles_df
+    if selected_topic != "All Topics":
+        filtered_df = filtered_df[filtered_df["category"] == selected_topic]
 
     if search_query:
         kw = search_query.strip().lower()
-        displayed_articles = articles_df[
-            articles_df["title"].str.lower().str.contains(kw) |
-            articles_df["description"].str.lower().str.contains(kw)
+        filtered_df = filtered_df[
+            filtered_df["title"].str.lower().str.contains(kw) |
+            filtered_df["description"].str.lower().str.contains(kw)
         ]
-    else:
-        displayed_articles = articles_df
 
-    if displayed_articles.empty:
-        st.info("No articles match your search filter.")
+    # 6.3 Article Cards Display
+    if filtered_df.empty:
+        st.info("No articles match your selected topic and keyword filter.")
     else:
-        st.caption(f"Showing **{min(len(displayed_articles), 12)}** of **{len(displayed_articles)}** articles.")
-        for _, article in displayed_articles.head(12).iterrows():
+        st.caption(f"Showing **{min(len(filtered_df), 12)}** of **{len(filtered_df)}** matching articles.")
+        for _, article in filtered_df.head(12).iterrows():
             with st.container():
                 st.markdown(f"##### [{article['title']}]({article['url']})")
-                st.caption(f"📰 **Source:** {article['source']} | 🕒 **Published:** {article['published_at']}")
+                
+                # Category and metadata line
+                cat_badge = article.get("category", "General")
+                kw_tags = article.get("matched_keywords", "None")
+                st.markdown(
+                    f"🏷️ **Category:** `{cat_badge}` &nbsp;|&nbsp; "
+                    f"📰 **Source:** {article['source']} &nbsp;|&nbsp; "
+                    f"🕒 **Published:** {article['published_at']}"
+                )
+                
                 st.write(article["description"])
+                if kw_tags and kw_tags != "None":
+                    st.caption(f"💡 *Triggered by economic keywords:* `{kw_tags}`")
                 st.divider()
 
     # 7. Section 3: Interpretation & Analysis Placeholder
