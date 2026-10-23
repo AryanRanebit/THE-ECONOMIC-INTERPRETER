@@ -21,6 +21,7 @@ from modules.economic_data import (
 )
 from modules.news_data import get_economic_news
 from modules.text_processing import categorize_dataframe
+from modules.analysis import generate_all_interpretations
 
 # Supported countries with India as default (per GEMINI.md)
 SUPPORTED_COUNTRIES = {
@@ -482,13 +483,76 @@ def main() -> None:
                     st.caption(f"💡 *Triggered by economic keywords:* `{kw_tags}`")
                 st.divider()
 
-    # 7. Section 3: Interpretation & Analysis Placeholder
+    # 7. Section 3: Interpretation & Analysis
     st.divider()
-    st.header("3. Economic Interpretation & Synthesis")
-    st.info(
-        "🧠 **Phase 6 Target:** Objective, evidence-based synthesis connecting observed indicator changes "
-        "with news topics, complete with stated analytical limitations."
+    st.header(f"3. Economic Interpretation & Synthesis — {SUPPORTED_COUNTRIES[selected_country_code]}")
+    st.markdown(
+        """
+        This section connects the **empirical indicator observations** from Section 1 with the 
+        **thematic news coverage** from Section 2 using deterministic educational explanation templates.
+        """
     )
+
+    with st.spinner("Synthesizing economic trends with news topics..."):
+        interpretations = generate_all_interpretations(
+            economic_data=economic_data,
+            categorized_news_df=articles_df,
+        )
+
+    # Indicator Interpretations Tabs
+    interp_tabs = st.tabs([
+        "🔥 Inflation Interpretation",
+        "👥 Unemployment Interpretation",
+        "📈 Real GDP Growth Interpretation",
+    ])
+
+    tab_mappings = [
+        (interp_tabs[0], "inflation", "🔥"),
+        (interp_tabs[1], "unemployment", "👥"),
+        (interp_tabs[2], "gdp_growth", "📈"),
+    ]
+
+    for tab, key, icon in tab_mappings:
+        item = interpretations.get(key, {})
+        with tab:
+            st.subheader(f"{icon} {item.get('indicator_name', key.title())}")
+
+            if not item.get("has_data"):
+                st.warning(item.get("observed_trend", "Data unavailable."))
+            else:
+                # 1. Observed Trend
+                st.markdown(f"##### 1. 🔍 {item.get('observed_trend')}")
+
+                # 2. Relevant News
+                st.markdown("##### 2. 📰 Potentially Related News Articles")
+                rel_news = item.get("relevant_news", [])
+                if rel_news:
+                    for article in rel_news:
+                        st.markdown(
+                            f"- **[{article['title']}]({article['url']})**  \n"
+                            f"  *Source: {article['source']} | Topic: `{article['category']}` | Date: {article['published_at']}*"
+                        )
+                else:
+                    st.info("No articles matching this topic were identified in the current news feed sample.")
+
+                # 3. Possible Economic Mechanism
+                st.markdown(f"##### 3. 💡 {item.get('possible_explanation')}")
+
+                # 4. Limitations & Uncertainty
+                st.info(f"⚠️ **{item.get('limitations')}**")
+
+    # 8. Concise Methodology & Sources (per GEMINI.md Section 5)
+    st.divider()
+    with st.expander("📚 Methodology, Data Integrity & Analytical Disclaimers", expanded=False):
+        st.markdown(
+            """
+            ### Project Methodology & Governance
+            - **Economic Indicators:** Extracted directly from the **World Bank Indicators API** without interpolation or synthetic substitution. Missing reporting years are retained as `NaN` rather than coerced to zero.
+            - **News Extraction & Deduplication:** Aggregated from public RSS economic news feeds, stripped of HTML artifacts, and deduplicated using URL and normalized headline hashes.
+            - **NLP Categorization:** Transparent, deterministic keyword matching across core macroeconomic topics (*Inflation*, *Employment*, *GDP & Growth*, *Monetary Policy*).
+            - **Causality Disclaimer:** This software is designed strictly for academic demonstration and general economic literacy. Correlation between annual macroeconomic indicators and real-time news headlines **does not prove causality**. This platform does not provide financial, investment, or forecasting advice.
+            """
+        )
 
     # 8. Footer & Methodology Reference
     st.divider()
