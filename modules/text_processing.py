@@ -162,9 +162,11 @@ def categorize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     keywords_list: List[str] = []
 
     for _, row in df_copy.iterrows():
-        title = str(row.get("title", ""))
-        desc = str(row.get("description", ""))
-        combined_text = f"{title} {desc}"
+        title_val = row.get("title", "")
+        desc_val = row.get("description", "")
+        title = str(title_val) if pd.notna(title_val) and str(title_val).lower() != "none" else ""
+        desc = str(desc_val) if pd.notna(desc_val) and str(desc_val).lower() != "none" else ""
+        combined_text = f"{title} {desc}".strip()
 
         category, matched = categorize_article_text(combined_text)
         categories.append(category)

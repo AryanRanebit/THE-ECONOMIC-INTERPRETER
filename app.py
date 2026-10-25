@@ -247,15 +247,15 @@ def main() -> None:
             chg = inf_summary.get("change")
             prev_yr = inf_summary.get("previous_year")
             # Invert delta color: For inflation, an increase is typically higher cost of living
-            delta_label = f"{chg:+.2f}% vs {prev_yr}" if chg is not None else None
+            delta_label = f"{chg:+.2f} pp vs {prev_yr}" if chg is not None else None
             st.metric(
-                label=inf_meta["name"],
+                label=inf_meta.get("name", "Inflation"),
                 value=val,
                 delta=delta_label,
                 delta_color="inverse",
-                help=inf_meta["description"],
+                help=inf_meta.get("description", ""),
             )
-            st.caption(f"📅 **Reporting Period:** {inf_summary['latest_year']} | Code: `{inf_meta['code']}`")
+            st.caption(f"📅 **Reporting Period:** {inf_summary['latest_year']} | Code: `{inf_meta.get('code', 'N/A')}`")
         else:
             st.warning("Inflation data unavailable for selected range.")
 
@@ -268,15 +268,15 @@ def main() -> None:
             val = f"{uem_summary['latest_value']:.2f}%"
             chg = uem_summary.get("change")
             prev_yr = uem_summary.get("previous_year")
-            delta_label = f"{chg:+.2f}% vs {prev_yr}" if chg is not None else None
+            delta_label = f"{chg:+.2f} pp vs {prev_yr}" if chg is not None else None
             st.metric(
-                label=uem_meta["name"],
+                label=uem_meta.get("name", "Unemployment Rate"),
                 value=val,
                 delta=delta_label,
                 delta_color="inverse",
-                help=uem_meta["description"],
+                help=uem_meta.get("description", ""),
             )
-            st.caption(f"📅 **Reporting Period:** {uem_summary['latest_year']} | Code: `{uem_meta['code']}`")
+            st.caption(f"📅 **Reporting Period:** {uem_summary['latest_year']} | Code: `{uem_meta.get('code', 'N/A')}`")
         else:
             st.warning("Unemployment data unavailable for selected range.")
 
@@ -289,15 +289,15 @@ def main() -> None:
             val = f"{gdp_summary['latest_value']:.2f}%"
             chg = gdp_summary.get("change")
             prev_yr = gdp_summary.get("previous_year")
-            delta_label = f"{chg:+.2f}% vs {prev_yr}" if chg is not None else None
+            delta_label = f"{chg:+.2f} pp vs {prev_yr}" if chg is not None else None
             st.metric(
-                label=gdp_meta["name"],
+                label=gdp_meta.get("name", "Real GDP Growth"),
                 value=val,
                 delta=delta_label,
                 delta_color="normal",
-                help=gdp_meta["description"],
+                help=gdp_meta.get("description", ""),
             )
-            st.caption(f"📅 **Reporting Period:** {gdp_summary['latest_year']} | Code: `{gdp_meta['code']}`")
+            st.caption(f"📅 **Reporting Period:** {gdp_summary['latest_year']} | Code: `{gdp_meta.get('code', 'N/A')}`")
         else:
             st.warning("GDP Growth data unavailable for selected range.")
 
@@ -362,7 +362,10 @@ def main() -> None:
                 merged_table = pd.merge(merged_table, other, on="year", how="outer")
             merged_table = merged_table.sort_values(by="year", ascending=False).reset_index(drop=True)
             st.dataframe(
-                merged_table.style.format({col: "{:.2f}%" for col in merged_table.columns if col != "year"}),
+                merged_table.style.format(
+                    {col: "{:.2f}%" for col in merged_table.columns if col != "year"},
+                    na_rep="N/A",
+                ),
                 use_container_width=True,
             )
         else:

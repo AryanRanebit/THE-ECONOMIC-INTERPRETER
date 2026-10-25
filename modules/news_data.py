@@ -31,7 +31,7 @@ SAMPLE_NEWS_PATH = DATA_DIR / "sample_news.csv"
 
 def clean_html_text(raw_html: Optional[str]) -> str:
     """Strip HTML tags and unescape HTML entities from a string."""
-    if not raw_html:
+    if not isinstance(raw_html, str) or not raw_html.strip():
         return ""
     # Strip HTML tags like <b> or <a>
     clean_text = re.sub(r"<[^>]+>", "", raw_html)
@@ -49,12 +49,17 @@ def deduplicate_articles(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Deduplicated DataFrame.
     """
-    if df.empty:
+    if df.empty or "title" not in df.columns:
         return df
 
     df = df.copy()
-    # First pass: Deduplicate by exact URL (ignoring null URLs)
-    df = df.drop_duplicates(subset=["url"], keep="first")
+
+    # First pass: Deduplicate by exact URL (only for non-empty, non-null URLs)
+    if "url" in df.columns:
+        has_url = df["url"].notna() & (df["url"].astype(str).str.strip().str.lower() != "none") & (df["url"].astype(str).str.strip() != "")
+        df_with_url = df[has_url].drop_duplicates(subset=["url"], keep="first")
+        df_no_url = df[~has_url]
+        df = pd.concat([df_with_url, df_no_url], ignore_index=True)
 
     # Second pass: Deduplicate by lowercased, stripped title
     df["title_normalized"] = df["title"].astype(str).str.lower().str.strip()

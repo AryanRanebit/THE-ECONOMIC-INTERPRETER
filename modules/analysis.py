@@ -42,7 +42,7 @@ def get_trend_direction(change: Optional[float], threshold: float = 0.05) -> str
     Returns:
         str: 'increased', 'decreased', or 'remained steady'.
     """
-    if change is None:
+    if change is None or pd.isna(change):
         return "insufficient data"
     if change > threshold:
         return "increased"
@@ -132,7 +132,7 @@ def generate_single_interpretation(
     name = meta.get("name", indicator_key.title())
     unit = meta.get("unit", "%")
 
-    if not summary.get("has_data") or summary.get("latest_value") is None:
+    if not summary.get("has_data") or summary.get("latest_value") is None or pd.isna(summary.get("latest_value")):
         return {
             "indicator_key": indicator_key,
             "indicator_name": name,
@@ -151,7 +151,13 @@ def generate_single_interpretation(
     direction = get_trend_direction(change)
 
     # 1. Observed Trend (Fact-based statement)
-    if prev_val is not None and prev_yr is not None and change is not None:
+    if (
+        prev_val is not None
+        and not pd.isna(prev_val)
+        and prev_yr is not None
+        and change is not None
+        and not pd.isna(change)
+    ):
         observed_trend = (
             f"Observed Trend: {name} stood at {latest_val:.2f}{unit} in {latest_yr}. "
             f"Compared to {prev_val:.2f}{unit} in {prev_yr}, the indicator has {direction} "
@@ -167,10 +173,12 @@ def generate_single_interpretation(
         filtered_news = categorized_news_df[categorized_news_df["category"].isin(relevant_categories)]
 
         for _, row in filtered_news.head(3).iterrows():
+            url_val = row.get("url", "")
+            clean_url = str(url_val).strip() if pd.notna(url_val) and str(url_val).strip().lower() != "none" else ""
             matched_articles.append({
                 "title": str(row.get("title", "")),
                 "source": str(row.get("source", "")),
-                "url": str(row.get("url", "")),
+                "url": clean_url,
                 "category": str(row.get("category", "")),
                 "published_at": str(row.get("published_at", "")),
             })

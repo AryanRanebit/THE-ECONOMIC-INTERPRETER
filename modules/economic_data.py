@@ -81,6 +81,9 @@ def fetch_indicator_series(
         records = []
 
         for item in observations:
+            if not isinstance(item, dict):
+                continue
+
             raw_date = item.get("date")
             raw_value = item.get("value")
 
@@ -91,7 +94,10 @@ def fetch_indicator_series(
                 continue
 
             # Note: We do NOT convert None to 0. A missing observation is kept as None/NaN.
-            value = float(raw_value) if raw_value is not None else None
+            try:
+                value = float(raw_value) if raw_value is not None else None
+            except (ValueError, TypeError):
+                value = None
 
             records.append({
                 "year": year,
@@ -137,11 +143,13 @@ def get_indicator_summary(df: pd.DataFrame) -> Dict[str, Any]:
         "change": None,
     }
 
-    if df.empty:
+    if df.empty or "value" not in df.columns or "year" not in df.columns:
         return summary
 
     # Filter out missing/NaN values to find actual recorded observations
-    valid_df = df.dropna(subset=["value"]).sort_values(by="year", ascending=True)
+    valid_df = df[pd.to_numeric(df["value"], errors="coerce").notna()].copy()
+    valid_df["value"] = pd.to_numeric(valid_df["value"])
+    valid_df = valid_df.sort_values(by="year", ascending=True)
 
     if valid_df.empty:
         return summary
