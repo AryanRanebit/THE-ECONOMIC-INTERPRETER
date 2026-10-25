@@ -245,3 +245,71 @@ def test_streamlit_app_compilation():
     assert hasattr(app, "build_combined_trend_chart")
     assert hasattr(app, "build_single_indicator_chart")
     assert hasattr(app, "SUPPORTED_COUNTRIES")
+
+
+# ---------------------------------------------------------------------------
+# 11. Vercel Serverless Function API Handler Executes Cleanly
+# ---------------------------------------------------------------------------
+def test_vercel_serverless_handler():
+    """Verify that api/index.py processes health, news, and indicators requests properly."""
+    import io
+    import json
+    from api.index import handler
+
+    # 1. Test health endpoint
+    h_health = handler.__new__(handler)
+    h_health.wfile = io.BytesIO()
+    h_health.path = "/api/index?action=health"
+    h_health.do_GET()
+    resp_health = h_health.wfile.getvalue().decode("utf-8")
+    assert "healthy" in resp_health
+
+    # 2. Test news endpoint with sample mode
+    h_news = handler.__new__(handler)
+    h_news.wfile = io.BytesIO()
+    h_news.path = "/api/index?action=news&use_sample=true"
+    h_news.do_GET()
+    resp_news = h_news.wfile.getvalue().decode("utf-8")
+    headers, body = resp_news.split("\r\n\r\n", 1)
+    data_news = json.loads(body)
+    assert data_news["is_sample"] is True
+    assert data_news["article_count"] > 0
+
+    # 3. Test interpret endpoint with sample mode
+    h_interp = handler.__new__(handler)
+    h_interp.wfile = io.BytesIO()
+    h_interp.path = "/api/index?action=interpret&country=IN&range=2022:2024&use_sample=true"
+    h_interp.do_GET()
+    resp_interp = h_interp.wfile.getvalue().decode("utf-8")
+    headers_i, body_i = resp_interp.split("\r\n\r\n", 1)
+    data_interp = json.loads(body_i)
+    assert "interpretations" in data_interp
+    assert set(data_interp["interpretations"].keys()) == {"inflation", "unemployment", "gdp_growth"}
+
+
+# ---------------------------------------------------------------------------
+# 12. Deployment Configuration Integrity
+# ---------------------------------------------------------------------------
+def test_deployment_configuration_files():
+    """Verify that vercel.json, .streamlit/config.toml, and public/index.html exist and are valid."""
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+
+    # Check vercel.json
+    vercel_path = root / "vercel.json"
+    assert vercel_path.exists(), "vercel.json must exist for Vercel deployment."
+    with open(vercel_path, "r", encoding="utf-8") as f:
+        vercel_cfg = json.load(f)
+    assert "builds" in vercel_cfg
+    assert "routes" in vercel_cfg
+
+    # Check public/index.html
+    html_path = root / "public" / "index.html"
+    assert html_path.exists(), "public/index.html must exist for static dashboard."
+
+    # Check .streamlit/config.toml
+    st_cfg_path = root / ".streamlit" / "config.toml"
+    assert st_cfg_path.exists(), ".streamlit/config.toml must exist for production headless mode."
+
