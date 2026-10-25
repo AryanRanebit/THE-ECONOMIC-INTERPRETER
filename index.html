@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Economic Interpreter — Cloud & Serverless Portal</title>
+  <meta name="description" content="A beginner-friendly data science application connecting macroeconomic indicators with economic news using transparent NLP.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 0;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: white;
+      padding: 2.5rem 1.5rem 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    .header-content {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 0.5rem 0 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .subtitle {
+      font-size: 1.05rem;
+      color: #cbd5e1;
+      max-width: 700px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
+
+    main {
+      padding: 2.5rem 0 4rem;
+    }
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Controls Bar */
+    .controls-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    select {
+      font-family: inherit;
+      padding: 0.5rem 0.85rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 0.95rem;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    /* Metric Cards Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+    .metric-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .metric-value {
+      font-size: 2.3rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+    }
+    .metric-delta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+    }
+    .delta-up { background: #fee2e2; color: #b91c1c; }
+    .delta-down { background: #dcfce7; color: #15803d; }
+    .delta-neutral { background: #f1f5f9; color: #475569; }
+    .metric-footer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Interpretation Cards */
+    .interpret-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .interpret-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .interpret-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #f1f5f9;
+    }
+    .interp-block {
+      margin-bottom: 1rem;
+    }
+    .interp-block-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+    .interp-box {
+      background: #f8fafc;
+      border-left: 4px solid var(--primary-light);
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.92rem;
+    }
+    .disclaimer-box {
+      background: #fffbeb;
+      border-left: 4px solid var(--warning);
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.85rem;
+      color: #92400e;
+    }
+
+    /* News Grid */
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .news-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .news-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .news-title:hover { text-decoration: underline; }
+    .news-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .news-tag {
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+    .news-desc {
+      font-size: 0.88rem;
+      color: #334155;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Architecture Card */
+    .arch-card {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+    }
+    .arch-card h3 {
+      font-size: 1.2rem;
+      color: #38bdf8;
+      margin-bottom: 0.75rem;
+    }
+    .arch-card p {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      margin-bottom: 1rem;
+    }
+    .code-box {
+      font-family: var(--font-mono);
+      background: #1e293b;
+      padding: 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-content">
+      <div>
+        <div class="badge">
+          <span>⚡</span> Vercel Serverless Function & Cloud Portal
+        </div>
+        <h1>📈 The Economic Interpreter</h1>
+        <p class="subtitle">Demystifying Macroeconomic Indicators & News via Natural Language Processing</p>
+      </div>
+      <div class="header-actions">
+        <a href="https://share.streamlit.io" target="_blank" rel="noopener" class="btn btn-primary">
+          <span>🚀</span> Open Native Streamlit App
+        </a>
+        <a href="#architecture" class="btn btn-secondary">
+          <span>📚</span> Architecture & Docs
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+
+    <!-- Controls -->
+    <div class="controls-card">
+      <div class="control-group">
+        <label for="countrySelect">Select Economy:</label>
+        <select id="countrySelect">
+          <option value="IN" selected>India 🇮🇳 (Default)</option>
+          <option value="US">United States 🇺🇸</option>
+          <option value="GB">United Kingdom 🇬🇧</option>
+          <option value="DE">Germany 🇩🇪</option>
+          <option value="JP">Japan 🇯🇵</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="rangeSelect">Time Horizon:</label>
+        <select id="rangeSelect">
+          <option value="2015:2025" selected>2015 – 2025 (10 Years)</option>
+          <option value="2010:2025">2010 – 2025 (15 Years)</option>
+          <option value="2000:2025">2000 – 2025 (Full Range)</option>
+        </select>
+      </div>
+
+      <div>
+        <button id="refreshBtn" class="btn btn-primary" onclick="loadDashboardData()">
+          <span>🔄</span> Fetch Live Serverless Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 1: Economic Overview Cards -->
+    <h2 class="section-title">1. Macroeconomic Indicator Signals</h2>
+    <div class="metrics-grid">
+      <!-- Inflation -->
+      <div class="metric-card" id="card-inflation">
+        <div class="metric-header">
+          <span class="metric-title">🔥 Inflation Rate</span>
+          <span class="badge" style="background:#fee2e2; color:#b91c1c; border-color:#fca5a5;">CPI Annual %</span>
+        </div>
+        <div class="metric-value" id="val-inflation">--</div>
+        <div class="metric-delta" id="delta-inflation">Fetching...</div>
+        <div class="metric-footer">
+          <span id="period-inflation">Period: --</span>
+          <span>Source: World Bank</span>
+        </div>
+      </div>
+
+      <!-- Unemployment -->
+      <div class="metric-card" id="card-unemployment">
+        <div class="metric-header">
+          <span class="metric-title">👥 Unemployment Rate</span>
+          <span class="badge" style="background:#fef3c7; color:#92400e; border-color:#fcd34d;">% of Labor Force</span>
+        </div>
+        <div class="metric-value" id="val-unemployment">--</div>
+        <div class="metric-delta" id="delta-unemployment">Fetching...</div>
+        <div class="metric-footer">
+          <span id="period-unemployment">Period: --</span>
+          <span>Source: World Bank</span>
+        </div>
+      </div>
+
+      <!-- GDP Growth -->
+      <div class="metric-card" id="card-gdp">
+        <div class="metric-header">
+          <span class="metric-title">📈 Real GDP Growth</span>
+          <span class="badge" style="background:#dcfce7; color:#15803d; border-color:#86efac;">Annual %</span>
+        </div>
+        <div class="metric-value" id="val-gdp">--</div>
+        <div class="metric-delta" id="delta-gdp">Fetching...</div>
+        <div class="metric-footer">
+          <span id="period-gdp">Period: --</span>
+          <span>Source: World Bank</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Structured Economic Interpretation -->
+    <h2 class="section-title">2. Evidence-Based Economic Interpretation (Deterministic NLP)</h2>
+    <div class="interpret-grid" id="interpretContainer">
+      <div class="interpret-card">
+        <p style="color:var(--text-muted); text-align:center;">Loading deterministic economic interpretations from Python serverless runtime...</p>
+      </div>
+    </div>
+
+    <!-- Section 3: Topic-Categorized Economic News -->
+    <h2 class="section-title">3. Topic-Categorized Economic Headlines (Explainable NLP)</h2>
+    <div class="news-grid" id="newsContainer">
+      <div class="news-card">
+        <p style="color:var(--text-muted); text-align:center;">Retrieving categorized news...</p>
+      </div>
+    </div>
+
+    <!-- Section 4: Architecture & College Project Presentation -->
+    <div id="architecture" class="arch-card">
+      <h3>🏛️ Academic Project Architecture: Serverless API vs. Native Streamlit</h3>
+      <p>
+        This portal demonstrates a dual deployment architecture designed for academic evaluation:
+      </p>
+      <div class="code-box">
+[Vercel Serverless Function: api/index.py]  <--- Python 3.10+ (@vercel/python)
+   ├── Pure HTTP JSON REST Endpoints: GET /api/index?action=indicators | news | interpret
+   ├── Serverless execution ceiling: &lt; 10s execution | Stateless | Scalable on-demand
+   └── Serves static HTML/JS frontend from root
+
+[Streamlit Cloud Native App: app.py]      <--- Python Stateful Daemon (Tornado)
+   ├── Persistent bi-directional WebSocket connection (ws://)
+   ├── Real-time Plotly interactive charts & reactive parameter sliders
+   └── Official platform specified in GEMINI.md project instructions
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p><strong>The Economic Interpreter</strong> — Academic Data Science Project by Aryan Rane.</p>
+      <p>Data Sources: World Bank Open Data Indicators API & Google News RSS. Designed strictly for educational literacy. Not investment or financial advice.</p>
+    </div>
+  </footer>
+
+  <!-- Client-side Logic calling Vercel Serverless Function -->
+  <script>
+    async function loadDashboardData() {
+      const country = document.getElementById('countrySelect').value;
+      const range = document.getElementById('rangeSelect').value;
+      const refreshBtn = document.getElementById('refreshBtn');
+
+      refreshBtn.innerHTML = '<span class="loading-spinner"></span> Loading...';
+      refreshBtn.disabled = true;
+
+      try {
+        // 1. Fetch Indicators
+        const indRes = await fetch(`/api/index?action=indicators&country=${country}&range=${range}`);
+        if (indRes.ok) {
+          const indData = await indRes.json();
+          renderIndicators(indData.indicators);
+        }
+
+        // 2. Fetch Interpretations
+        const interpRes = await fetch(`/api/index?action=interpret&country=${country}&range=${range}&use_sample=false`);
+        if (interpRes.ok) {
+          const interpData = await interpRes.json();
+          renderInterpretations(interpData.interpretations);
+        }
+
+        // 3. Fetch News
+        const newsRes = await fetch(`/api/index?action=news&use_sample=false`);
+        if (newsRes.ok) {
+          const newsData = await newsRes.json();
+          renderNews(newsData.articles);
+        }
+
+      } catch (err) {
+        console.error('Failed to query Vercel Serverless Function:', err);
+      } finally {
+        refreshBtn.innerHTML = '<span>🔄</span> Fetch Live Serverless Data';
+        refreshBtn.disabled = false;
+      }
+    }
+
+    function renderIndicators(indicators) {
+      if (!indicators) return;
+
+      const formatVal = (val) => (val !== null && val !== undefined) ? `${Number(val).toFixed(2)}%` : 'N/A';
+      const formatDelta = (chg, yr) => {
+        if (chg === null || chg === undefined) return 'No change baseline';
+        const sign = chg > 0 ? '+' : '';
+        return `${sign}${Number(chg).toFixed(2)} pp vs ${yr || 'prior'}`;
+      };
+
+      // Inflation
+      const inf = indicators.inflation?.summary || {};
+      document.getElementById('val-inflation').innerText = formatVal(inf.latest_value);
+      document.getElementById('delta-inflation').innerText = formatDelta(inf.change, inf.previous_year);
+      document.getElementById('delta-inflation').className = 'metric-delta ' + (inf.change > 0 ? 'delta-up' : 'delta-down');
+      document.getElementById('period-inflation').innerText = `Period: ${inf.latest_year || 'N/A'}`;
+
+      // Unemployment
+      const uem = indicators.unemployment?.summary || {};
+      document.getElementById('val-unemployment').innerText = formatVal(uem.latest_value);
+      document.getElementById('delta-unemployment').innerText = formatDelta(uem.change, uem.previous_year);
+      document.getElementById('delta-unemployment').className = 'metric-delta ' + (uem.change > 0 ? 'delta-up' : 'delta-down');
+      document.getElementById('period-unemployment').innerText = `Period: ${uem.latest_year || 'N/A'}`;
+
+      // GDP
+      const gdp = indicators.gdp_growth?.summary || {};
+      document.getElementById('val-gdp').innerText = formatVal(gdp.latest_value);
+      document.getElementById('delta-gdp').innerText = formatDelta(gdp.change, gdp.previous_year);
+      document.getElementById('delta-gdp').className = 'metric-delta ' + (gdp.change >= 0 ? 'delta-down' : 'delta-up');
+      document.getElementById('period-gdp').innerText = `Period: ${gdp.latest_year || 'N/A'}`;
+    }
+
+    function renderInterpretations(interps) {
+      if (!interps) return;
+      const container = document.getElementById('interpretContainer');
+      container.innerHTML = '';
+
+      const items = [
+        { key: 'inflation', icon: '🔥', title: 'Inflation Analysis' },
+        { key: 'unemployment', icon: '👥', title: 'Labor Market Analysis' },
+        { key: 'gdp_growth', icon: '📈', title: 'Economic Growth Analysis' }
+      ];
+
+      items.forEach(item => {
+        const data = interps[item.key] || {};
+        const card = document.createElement('div');
+        card.className = 'interpret-card';
+        card.innerHTML = `
+          <div class="interpret-header">
+            <span>${item.icon}</span>
+            <span>${data.indicator_name || item.title}</span>
+          </div>
+          <div class="interp-block">
+            <div class="interp-block-title">1. Empirical Trend</div>
+            <div class="interp-box">${data.observed_trend || 'No empirical observations available.'}</div>
+          </div>
+          <div class="interp-block">
+            <div class="interp-block-title">2. Textbook Economic Mechanism</div>
+            <p style="font-size:0.92rem; color:#334155;">${data.possible_explanation || 'N/A'}</p>
+          </div>
+          <div class="disclaimer-box">
+            <strong>⚠️ Limitations:</strong> ${data.limitations || 'Correlation in timing does not imply direct causation.'}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderNews(articles) {
+      if (!articles || !articles.length) return;
+      const container = document.getElementById('newsContainer');
+      container.innerHTML = '';
+
+      articles.slice(0, 6).forEach(art => {
+        const card = document.createElement('div');
+        card.className = 'news-card';
+        card.innerHTML = `
+          <div>
+            <div class="news-meta">
+              <span class="news-tag">${art.category || 'General'}</span>
+              <span>📰 ${art.source || 'News'}</span>
+              <span>🕒 ${art.published_at || 'Recent'}</span>
+            </div>
+            <a href="${art.url || '#'}" target="_blank" rel="noopener" class="news-title">${art.title}</a>
+            <p class="news-desc">${art.description || ''}</p>
+          </div>
+          <div style="font-size:0.75rem; color:var(--text-muted); border-top:1px solid #f1f5f9; padding-top:0.5rem;">
+            Keywords: <code>${art.matched_keywords || 'None'}</code>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Auto load on initial page load
+    window.addEventListener('DOMContentLoaded', loadDashboardData);
+  </script>
+</body>
+</html>

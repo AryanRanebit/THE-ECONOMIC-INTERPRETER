@@ -291,7 +291,7 @@ def test_vercel_serverless_handler():
 # 12. Deployment Configuration Integrity
 # ---------------------------------------------------------------------------
 def test_deployment_configuration_files():
-    """Verify that vercel.json, .streamlit/config.toml, and public/index.html exist and are valid."""
+    """Verify that vercel.json, .streamlit/config.toml, and index.html exist and are valid."""
     import json
     from pathlib import Path
 
@@ -302,12 +302,11 @@ def test_deployment_configuration_files():
     assert vercel_path.exists(), "vercel.json must exist for Vercel deployment."
     with open(vercel_path, "r", encoding="utf-8") as f:
         vercel_cfg = json.load(f)
-    assert "builds" in vercel_cfg
-    assert "routes" in vercel_cfg
+    assert "rewrites" in vercel_cfg, "vercel.json must define rewrites for serverless routing."
 
-    # Check public/index.html
-    html_path = root / "public" / "index.html"
-    assert html_path.exists(), "public/index.html must exist for static dashboard."
+    # Check index.html
+    html_root = root / "index.html"
+    assert html_root.exists(), "index.html must exist at root for static dashboard."
 
     # Check .streamlit/config.toml
     st_cfg_path = root / ".streamlit" / "config.toml"
