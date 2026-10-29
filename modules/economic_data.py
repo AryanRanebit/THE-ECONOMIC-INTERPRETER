@@ -13,7 +13,13 @@ Indicators Supported:
 from typing import Any, Dict, Optional
 import pandas as pd
 import requests
-import streamlit as st
+
+try:
+    import streamlit as st
+    cache_data_econ = st.cache_data(ttl=3600, show_spinner=False)
+except Exception:
+    def cache_data_econ(func):
+        return func
 
 # World Bank API Base URL
 WORLD_BANK_BASE_URL = "https://api.worldbank.org/v2"
@@ -171,7 +177,7 @@ def get_indicator_summary(df: pd.DataFrame) -> Dict[str, Any]:
     return summary
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@cache_data_econ
 def load_all_economic_data(
     country_code: str = "IN",
     date_range: str = "2000:2025",

@@ -22,7 +22,13 @@ import xml.etree.ElementTree as ET
 
 import pandas as pd
 import requests
-import streamlit as st
+
+try:
+    import streamlit as st
+    cache_data_news = st.cache_data(ttl=1800, show_spinner=False)
+except Exception:
+    def cache_data_news(func):
+        return func
 
 # Base path for local sample data
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -166,7 +172,7 @@ def fetch_google_news_rss(
         return pd.DataFrame(columns=["title", "source", "published_at", "description", "url", "is_sample"])
 
 
-@st.cache_data(ttl=1800, show_spinner=False)
+@cache_data_news
 def get_economic_news(
     query: str = "India economy inflation GDP unemployment",
     use_sample_data: bool = False,

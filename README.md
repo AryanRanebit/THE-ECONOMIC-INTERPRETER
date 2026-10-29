@@ -115,7 +115,15 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Step 4: Launch the Streamlit Web Application
+### Step 4: Launch on Localhost
+
+#### Option A: Redesigned High-Converting Dashboard & Design System (Port 8000)
+```bash
+python dev_server.py 8000
+```
+Open your browser at **`http://localhost:8000`** to view the redesigned light-blue dashboard with live interactive Chart.js time-series, debounced news search, 5-minute caching store, and the serverless JSON API at `/api`.
+
+#### Option B: Streamlit Web Application (Port 8501)
 ```bash
 streamlit run app.py
 ```

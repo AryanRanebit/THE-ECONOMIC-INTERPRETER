@@ -1,0 +1,7 @@
+# Lightweight Serverless API dependencies for Vercel (@vercel/python)
+# Keeps serverless package bundle well under the 250MB Lambda size limit
+requests>=2.31.0
+pandas>=2.0.0
+numpy>=1.26.0
+python-dotenv>=1.0.0
+
