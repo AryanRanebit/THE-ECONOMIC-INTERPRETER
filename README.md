@@ -37,6 +37,16 @@ The application retrieves real historical observations from public data APIs, ag
      2. **Relevant News:** Matched articles discussing related economic themes.
      3. **Possible Mechanism:** Textbook economic theory explaining potential links.
      4. **Analytical Limitations:** Explicit boundaries reminding users that correlation does not imply causation and distinguishing annual macroeconomic aggregates from real-time news horizons.
+5. **📰 News Pulse — Headline Sentiment:**
+   - Scores every article's tone (🟢 positive / ⚪ neutral / 🔴 negative, compound score -1 to +1) with the published **VADER** lexicon — fully offline, deterministic, no API keys.
+   - Per-topic and overall mood indicators update automatically with the news feed.
+6. **🔗 LinkLens — News vs. Economy Correlation:**
+   - Compares yearly average news tone and article volume against year-over-year indicator changes (Pearson's r).
+   - Only genuinely overlapping observed periods are compared (minimum 8 years); annual data is never upsampled into months. Shows the overlap count and time range next to every result, and an honest "not enough data yet" state otherwise.
+7. **🚨 Shock Radar — Anomaly Detection:**
+   - Flags years where an indicator's jump was unusually sharp versus its own typical swings (z-score ≥ 2 on year-over-year changes), with plain-English notes and ▲ markers on the trend charts.
+8. **🔮 Outlook Engine — Illustrative Trend Forecast:**
+   - Extends each indicator's least-squares trend a few years forward with an approximate 95% prediction band, fit quality (R²), and an explicit "illustrative only, not advice" disclaimer.
 
 ---
 
@@ -78,10 +88,15 @@ THE-ECONOMIC-INTERPRETER/
 │   ├── economic_data.py        # World Bank API fetcher, cleaner & caching
 │   ├── news_data.py            # News provider integration, deduplication & explicit fallback
 │   ├── text_processing.py      # Explainable NLP text processing & topic classification
-│   └── analysis.py             # 4-part educational interpretation engine with temporal horizons
+│   ├── analysis.py             # 4-part educational interpretation engine with temporal horizons
+│   ├── sentiment.py            # News Pulse: VADER headline sentiment scoring & mood aggregation
+│   ├── correlation.py          # LinkLens: news tone/volume vs indicator correlation (overlap-only)
+│   ├── anomaly.py              # Shock Radar: z-score anomaly detection on indicator changes
+│   └── forecast.py             # Outlook Engine: linear trend outlook with prediction intervals
 └── tests/
     ├── __init__.py             # Test package initializer
-    └── test_components.py      # Automated test suite (16 test assertions covering all criteria)
+    ├── test_components.py      # Core suite (16 tests covering the GEMINI.md criteria)
+    └── test_new_features.py    # Analytics suite (17 tests for the four features above)
 ```
 
 ---
@@ -154,10 +169,10 @@ The application will open automatically in your browser at `http://localhost:850
 
 ## 🧪 Running the Automated Test Suite
 
-A complete test suite is provided in `tests/test_components.py` verifying all 10 criteria specified in Section 9 of `GEMINI.md`:
+A complete test suite is provided in `tests/` — `test_components.py` verifies all 10 criteria specified in Section 9 of `GEMINI.md`, and `test_new_features.py` verifies News Pulse, LinkLens, Shock Radar, and Outlook Engine (including LinkLens's guarantee that no synthetic/interpolated periods ever enter a correlation):
 
 ```bash
-pytest tests/test_components.py -v
+pytest tests/ -v
 ```
 
 Expected output:
