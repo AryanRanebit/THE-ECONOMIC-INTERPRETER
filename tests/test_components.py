@@ -326,3 +326,23 @@ def test_news_api_key_retrieval(monkeypatch):
     assert get_news_api_key() is None
 
 
+# ---------------------------------------------------------------------------
+# 14. Explicit News Fallback (No Silent Substitution)
+# ---------------------------------------------------------------------------
+def test_live_news_failure_does_not_silently_substitute(monkeypatch):
+    """Verify that live news failure returns an empty DataFrame and error message, not sample data."""
+    from modules import news_data
+
+    # Mock both providers to return empty DataFrame
+    monkeypatch.setattr(news_data, "fetch_google_news_rss", lambda **kwargs: pd.DataFrame())
+    monkeypatch.setattr(news_data, "fetch_newsapi_org", lambda **kwargs: pd.DataFrame())
+    monkeypatch.setattr(news_data, "get_news_api_key", lambda: None)
+
+    payload = news_data.get_economic_news(query="test", use_sample_data=False)
+    assert payload["is_sample"] is False
+    assert payload["articles"].empty
+    assert payload["error"] is not None
+    assert "Live news feed could not be retrieved" in payload["error"]
+
+
+

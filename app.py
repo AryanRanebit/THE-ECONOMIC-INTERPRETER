@@ -199,12 +199,18 @@ def main() -> None:
 
         st.divider()
         st.subheader("📰 News Feed Settings")
+        if "news_mode_override" not in st.session_state:
+            st.session_state["news_mode_override"] = None
+
+        default_news_idx = 1 if st.session_state.get("news_mode_override") == "Sample Dataset (Offline)" else 0
         news_mode = st.radio(
             "News Source",
             options=["Live News Feed", "Sample Dataset (Offline)"],
-            index=0,
-            help="Live feed retrieves current articles via Google News RSS. Sample dataset provides guaranteed offline articles.",
+            index=default_news_idx,
+            help="Live feed retrieves current articles via Google News RSS or NewsAPI. Sample dataset provides guaranteed offline articles.",
         )
+        if news_mode == "Live News Feed" and st.session_state.get("news_mode_override") == "Sample Dataset (Offline)":
+            st.session_state["news_mode_override"] = None
         use_sample_news = (news_mode == "Sample Dataset (Offline)")
 
         st.divider()
@@ -400,10 +406,15 @@ def main() -> None:
             "⚠️ **Development Mode (Sample Dataset):** Displaying sample archived articles for offline testing. "
             "These articles are for development purposes and are not live news."
         )
-    else:
+    elif not articles_df.empty:
         st.success(f"🟢 **{source_label}**: Retrieved and categorized {len(articles_df)} deduplicated articles.")
+    else:
+        st.error(f"🔴 **{source_label}**: {news_payload.get('error', 'No articles could be retrieved.')}")
+        if st.button("📁 Load Offline Sample Dataset"):
+            st.session_state["news_mode_override"] = "Sample Dataset (Offline)"
+            st.rerun()
 
-    if news_payload.get("error"):
+    if news_payload.get("error") and not articles_df.empty:
         st.info(f"ℹ️ {news_payload['error']}")
 
     # 6.1 Topic Distribution Summary (NLP Educational Insight)

@@ -310,11 +310,10 @@ def get_economic_news(
             "error": None,
         }
 
-    # If live retrieval failed (e.g., no internet or rate limit), fall back gracefully
-    df_fallback = load_sample_news()
+    # Do NOT silently substitute sample data per GEMINI.md Section 7
     return {
-        "articles": df_fallback,
-        "source_type": "Sample Dataset (Automatic Fallback)",
-        "is_sample": True,
-        "error": "Live news feed could not be retrieved. Loaded local sample archive instead.",
+        "articles": pd.DataFrame(columns=["title", "source", "published_at", "description", "url", "is_sample"]),
+        "source_type": "Live News Feed (Unavailable)",
+        "is_sample": False,
+        "error": "Live news feed could not be retrieved (network drop, timeout, or rate-limiting). Please click 'Load Offline Sample Archive' to load verified sample data.",
     }
