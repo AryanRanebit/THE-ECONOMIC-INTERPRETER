@@ -20,7 +20,11 @@ from modules.economic_data import (
     INDICATOR_METADATA,
 )
 from modules.news_data import get_economic_news
-from modules.text_processing import categorize_dataframe
+from modules.text_processing import (
+    categorize_dataframe,
+    TOPIC_KEYWORDS,
+    DEFAULT_CATEGORY,
+)
 from modules.analysis import generate_all_interpretations
 
 # Supported countries with India as default (per GEMINI.md)
@@ -440,14 +444,7 @@ def main() -> None:
     # 6.2 Dual Filter Controls (Category Dropdown + Keyword Search)
     filter_col1, filter_col2 = st.columns([1, 2])
     with filter_col1:
-        topic_options = [
-            "All Topics",
-            "Inflation",
-            "Employment",
-            "GDP and Economic Growth",
-            "Monetary Policy",
-            "Other Economic News",
-        ]
+        topic_options = ["All Topics"] + list(TOPIC_KEYWORDS.keys()) + [DEFAULT_CATEGORY]
         selected_topic = st.selectbox(
             "Filter by Economic Topic:",
             options=topic_options,

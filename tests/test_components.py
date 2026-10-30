@@ -345,4 +345,20 @@ def test_live_news_failure_does_not_silently_substitute(monkeypatch):
     assert "Live news feed could not be retrieved" in payload["error"]
 
 
+# ---------------------------------------------------------------------------
+# 15. UI Topic Categories Dynamic Single-Source-of-Truth
+# ---------------------------------------------------------------------------
+def test_ui_topic_categories_match_nlp_module():
+    """Verify topic categories in UI match text processing single-source-of-truth."""
+    from modules.text_processing import TOPIC_KEYWORDS, DEFAULT_CATEGORY
+    expected_categories = ["All Topics"] + list(TOPIC_KEYWORDS.keys()) + [DEFAULT_CATEGORY]
+    assert len(expected_categories) == 6
+    assert "Inflation" in expected_categories
+    assert "Monetary Policy" in expected_categories
+    assert "Employment" in expected_categories
+    assert "GDP and Economic Growth" in expected_categories
+    assert "Other Economic News" in expected_categories
+
+
+
 
