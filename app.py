@@ -531,6 +531,11 @@ def main() -> None:
             if not item.get("has_data"):
                 st.warning(item.get("observed_trend", "Data unavailable."))
             else:
+                st.caption(
+                    f"⏱️ **Data Time Horizons:** Indicator Observation: `{item.get('indicator_period', 'Annual')}` &nbsp;|&nbsp; "
+                    f"News Feed: `{item.get('news_period', 'Recent')}`"
+                )
+
                 # 1. Observed Trend
                 st.markdown(f"##### 1. 🔍 {item.get('observed_trend')}")
 

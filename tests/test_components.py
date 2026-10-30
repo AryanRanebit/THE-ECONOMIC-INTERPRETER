@@ -360,5 +360,29 @@ def test_ui_topic_categories_match_nlp_module():
     assert "Other Economic News" in expected_categories
 
 
+# ---------------------------------------------------------------------------
+# 16. Explicit Temporal Horizons in Economic Interpretation
+# ---------------------------------------------------------------------------
+def test_interpretation_contains_temporal_horizon_metadata():
+    """Verify interpretations explicitly distinguish between historical annual indicator period and real-time news."""
+    from modules.analysis import generate_single_interpretation
+    info = {
+        "metadata": {"name": "Inflation", "unit": "%"},
+        "summary": {
+            "has_data": True,
+            "latest_year": 2023,
+            "latest_value": 5.4,
+            "previous_year": 2022,
+            "previous_value": 6.7,
+            "change": -1.3,
+        }
+    }
+    interp = generate_single_interpretation("inflation", info, pd.DataFrame())
+    assert "indicator_period" in interp
+    assert interp["indicator_period"] == "2023 Annual Aggregate"
+    assert "news_period" in interp
+
+
+
 
 
