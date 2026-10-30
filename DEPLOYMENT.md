@@ -89,15 +89,15 @@ In the Vercel configuration screen:
 - **Build and Output Settings:**
   - **Build Command:** Leave **OFF / Empty** (no build command required).
   - **Output Directory:** Leave **OFF / Empty**.
-  - **Install Command:** Leave default (`pip install -r requirements.txt` is run automatically by `@vercel/python`).
+  - **Install Command:** Leave default (`@vercel/python` automatically reads dependencies from `api/requirements.txt` to keep the serverless bundle size minimal).
 
 ### Step 4: Environment Variables
 - **No environment variables are required** for standard operation because the application uses open public APIs.
-- If you have an optional news provider API key in the future, you can add it here as `NEWS_API_KEY`.
+- If you have an optional news provider API key, you can add it in Vercel settings as `NEWS_API_KEY`.
 
 ### Step 5: Click Deploy
 1. Click **"Deploy"**.
-2. Vercel will install dependencies from `requirements.txt`, detect `api/index.py` as a Python Serverless Function, and publish `public/index.html` as the live static web portal.
+2. Vercel will install dependencies from `api/requirements.txt`, detect `api/index.py` as a Python Serverless Function, and publish `public/index.html` as the live static web portal.
 3. Once finished (typically 45–90 seconds), Vercel will assign you a live production URL (e.g., `https://the-economic-interpreter.vercel.app`).
 
 ### Step 6: Verify Live Vercel Deployment

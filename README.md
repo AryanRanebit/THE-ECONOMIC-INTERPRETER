@@ -18,10 +18,10 @@ The application retrieves real historical observations from public data APIs, ag
    - Interactive **Plotly** time-series charts (combined comparison and focused indicator views with hover tooltips).
    - Historical time-range filter (2000–2025) and country selection (defaulting to **India 🇮🇳**, with support for comparative economies).
 2. **Economic News & Topic Categorization:**
-   - Live economic news retrieval via Google News RSS (zero-key open access).
-   - Offline fallback sample archive (`data/sample_news.csv`) for offline development or testing without network access.
+   - Live economic news retrieval via Google News RSS (zero-key open access) and optional NewsAPI.org (`NEWS_API_KEY`).
+   - Explicit fallback to offline sample archive (`data/sample_news.csv`) when requested or when live feeds are unavailable, strictly avoiding silent substitution of fabricated data.
    - Two-pass deduplication algorithm by URL and normalized headline.
-   - Full-text keyword search and category filtering.
+   - Full-text keyword search and dynamically linked category filtering.
 3. **Transparent & Explainable NLP:**
    - Lightweight text processing: lowercase normalization, punctuation removal, and stopword stripping.
    - Rule-based keyword matching across 5 core topics:
@@ -36,7 +36,22 @@ The application retrieves real historical observations from public data APIs, ag
      1. **Observed Trend:** Fact-based change computed from actual World Bank data.
      2. **Relevant News:** Matched articles discussing related economic themes.
      3. **Possible Mechanism:** Textbook economic theory explaining potential links.
-     4. **Analytical Limitations:** Explicit boundaries reminding users that correlation does not imply causation.
+     4. **Analytical Limitations:** Explicit boundaries reminding users that correlation does not imply causation and distinguishing annual macroeconomic aggregates from real-time news horizons.
+
+---
+
+## 🏗️ Architecture & Dual-Track Deployment Specification
+
+To satisfy academic project specifications and support diverse hosting environments, the project features a dual-track architecture:
+
+1. **Canonical Academic Implementation (`app.py` — Streamlit Community Cloud):**
+   - The primary reference implementation strictly adheres to `GEMINI.md`.
+   - Single-tier, reactive Streamlit dashboard providing interactive Plotly graphs, reactive widgets, and educational explanation templates.
+   - Native deployment on Streamlit Community Cloud using `requirements.txt`.
+
+2. **Static & Serverless Portal (`index.html` + `api/index.py` — Vercel):**
+   - Headless client-server alternative demonstrating how the identical analytical modules (`modules/`) can power a static frontend via lightweight Python serverless functions (`@vercel/python`).
+   - Uses `api/requirements.txt` to keep the serverless bundle size minimal and compliant with Vercel's execution limits.
 
 ---
 
@@ -44,23 +59,29 @@ The application retrieves real historical observations from public data APIs, ag
 
 ```text
 THE-ECONOMIC-INTERPRETER/
-├── app.py                      # Streamlit application layout & UI orchestration
-├── requirements.txt            # Python dependency specifications
+├── app.py                      # Canonical Streamlit application layout & UI
+├── requirements.txt            # Streamlit dependencies (Pandas, Plotly, Streamlit, Requests)
 ├── .env.example                # Safe environment configuration template
 ├── .gitignore                  # Git exclusion rules (secrets, caches, bytecode)
-├── GEMINI.md                   # Complete project specifications & design rules
+├── GEMINI.md                   # Complete academic specifications & design rules
 ├── README.md                   # Project documentation & deployment guide
+├── DEPLOYMENT.md               # Detailed dual-platform deployment guide
+├── index.html / public/        # Optional static web portal
+├── api/
+│   ├── index.py                # Serverless JSON API wrapper for Vercel
+│   └── requirements.txt        # Minimal serverless dependency list
+├── dev_server.py               # Localhost testing server for static/REST dashboard
 ├── data/
 │   └── sample_news.csv         # Labelled offline development sample news archive
 ├── modules/
 │   ├── __init__.py             # Python package initializer
 │   ├── economic_data.py        # World Bank API fetcher, cleaner & caching
-│   ├── news_data.py            # News provider integration, deduplication & fallback
+│   ├── news_data.py            # News provider integration, deduplication & explicit fallback
 │   ├── text_processing.py      # Explainable NLP text processing & topic classification
-│   └── analysis.py             # 4-part educational interpretation engine
+│   └── analysis.py             # 4-part educational interpretation engine with temporal horizons
 └── tests/
     ├── __init__.py             # Test package initializer
-    └── test_components.py      # Automated test suite (10/10 GEMINI.md requirements)
+    └── test_components.py      # Automated test suite (16 test assertions covering all criteria)
 ```
 
 ---
