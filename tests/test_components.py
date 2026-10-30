@@ -312,3 +312,17 @@ def test_deployment_configuration_files():
     st_cfg_path = root / ".streamlit" / "config.toml"
     assert st_cfg_path.exists(), ".streamlit/config.toml must exist for production headless mode."
 
+
+# ---------------------------------------------------------------------------
+# 13. News API Key Retrieval & Provider Hierarchy
+# ---------------------------------------------------------------------------
+def test_news_api_key_retrieval(monkeypatch):
+    """Verify that NEWS_API_KEY is retrieved securely from environment variables."""
+    from modules.news_data import get_news_api_key
+    monkeypatch.setenv("NEWS_API_KEY", "test_key_12345")
+    assert get_news_api_key() == "test_key_12345"
+
+    monkeypatch.delenv("NEWS_API_KEY", raising=False)
+    assert get_news_api_key() is None
+
+

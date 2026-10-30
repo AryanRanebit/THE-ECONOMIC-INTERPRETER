@@ -35,6 +35,99 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 SAMPLE_NEWS_PATH = DATA_DIR / "sample_news.csv"
 
 
+def get_news_api_key() -> Optional[str]:
+    """
+    Retrieve optional News API key securely from environment variables or Streamlit secrets.
+    Never exposes keys in logs, exceptions, or user interfaces.
+    """
+    key = os.getenv("NEWS_API_KEY")
+    if key and key.strip():
+        return key.strip()
+
+    try:
+        if "st" in globals() and hasattr(st, "secrets") and "NEWS_API_KEY" in st.secrets:
+            sec_key = st.secrets["NEWS_API_KEY"]
+            if sec_key and str(sec_key).strip():
+                return str(sec_key).strip()
+    except Exception:
+        pass
+
+    return None
+
+
+def fetch_newsapi_org(
+    query: str = "India economy inflation GDP",
+    api_key: Optional[str] = None,
+    timeout_seconds: int = 10,
+) -> pd.DataFrame:
+    """
+    Fetch live economic news from NewsAPI.org when a valid API key is provided.
+
+    Parameters:
+        query: Search keywords.
+        api_key: NewsAPI authentication key.
+        timeout_seconds: Network request timeout.
+
+    Returns:
+        pd.DataFrame: Cleaned and deduplicated DataFrame of live news articles.
+    """
+    if not api_key:
+        return pd.DataFrame(columns=["title", "source", "published_at", "description", "url", "is_sample"])
+
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        "q": query,
+        "language": "en",
+        "sortBy": "publishedAt",
+        "pageSize": 50,
+    }
+    headers = {
+        "X-Api-Key": api_key,
+        "User-Agent": "TheEconomicInterpreter/1.0",
+    }
+
+    try:
+        response = requests.get(url, params=params, headers=headers, timeout=timeout_seconds)
+        response.raise_for_status()
+        data = response.json()
+
+        if data.get("status") != "ok" or "articles" not in data:
+            return pd.DataFrame(columns=["title", "source", "published_at", "description", "url", "is_sample"])
+
+        records: List[Dict[str, Any]] = []
+        for art in data.get("articles", []):
+            if not isinstance(art, dict):
+                continue
+            title = clean_html_text(art.get("title", ""))
+            desc = clean_html_text(art.get("description", ""))
+            source_dict = art.get("source", {})
+            source_name = source_dict.get("name", "NewsAPI") if isinstance(source_dict, dict) else "NewsAPI"
+            pub_date = str(art.get("publishedAt", ""))[:10]
+
+            if not desc:
+                desc = title
+
+            records.append({
+                "title": title,
+                "source": source_name,
+                "published_at": pub_date or "Recent",
+                "description": desc,
+                "url": art.get("url", ""),
+                "is_sample": False,
+            })
+
+        if not records:
+            return pd.DataFrame(columns=["title", "source", "published_at", "description", "url", "is_sample"])
+
+        df = pd.DataFrame(records)
+        return deduplicate_articles(df)
+
+    except requests.exceptions.RequestException as err:
+        print(f"[Warning] NewsAPI request failed: {err}")
+        return pd.DataFrame(columns=["title", "source", "published_at", "description", "url", "is_sample"])
+
+
+
 def clean_html_text(raw_html: Optional[str]) -> str:
     """Strip HTML tags and unescape HTML entities from a string."""
     if not isinstance(raw_html, str) or not raw_html.strip():
@@ -201,12 +294,18 @@ def get_economic_news(
         }
 
     # Attempt live retrieval
-    df_live = fetch_google_news_rss(query=query)
+    api_key = get_news_api_key()
+    if api_key:
+        df_live = fetch_newsapi_org(query=query, api_key=api_key)
+        live_label = "Live News Feed (NewsAPI.org)"
+    else:
+        df_live = fetch_google_news_rss(query=query)
+        live_label = "Live News Feed (Google News RSS)"
 
     if not df_live.empty:
         return {
             "articles": df_live,
-            "source_type": "Live News Feed (Google News RSS)",
+            "source_type": live_label,
             "is_sample": False,
             "error": None,
         }
