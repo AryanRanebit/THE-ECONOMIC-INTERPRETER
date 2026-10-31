@@ -1,0 +1,3136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Economic Interpreter — Macroeconomic Indicators & Explainable NLP</title>
+  <meta name="description" content="A rigorous empirical data science platform connecting World Bank macroeconomic indicators with economic news through explainable, rule-based natural language processing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Chart.js for responsive economic time-series visualizer -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM SPECIFICATION: The Economic Interpreter
+       Visual Identity: Luminous Light-Blue Palette, 60-30-10 Color Architecture,
+       4pt/8pt Spatial Cadence, Strict 6-Size Typographic Scale, WCAG AAA Contrast,
+       Tactile Button States, Subtle Graph-Paper Grid & Layered Soft Elevation.
+       ========================================================================== */
+
+    :root {
+      /* 60% Neutral Base Canvas & Surfaces: Luminous Light-Blue & Pure White */
+      --canvas-bg: #f0f7ff;          /* Luminous Light Blue Canvas */
+      --canvas-surface: #f8fbff;     /* Elevated Layer 1 (Soft Ice Tint) */
+      --canvas-card: #ffffff;        /* Elevated Layer 2 (Crisp Pure White) */
+      --canvas-card-hover: #f5f9ff;  /* Interactive hover tint */
+      --canvas-subtle: #e0f0fe;      /* Subtle dividers & chip backgrounds */
+      --canvas-accent: #e8f4fd;      /* Light blue accent background */
+      
+      /* Typography Colors (Strict WCAG 7:1+ AAA on White & Light Blue) */
+      --text-primary: #0a192f;       /* Deepest Navy 900: Highest visual contrast */
+      --text-secondary: #1e3a8a;     /* Deep Royal Blue 900: Readable body & headings */
+      --text-muted: #475569;         /* Slate 600: High-contrast subtext (5.8:1+) */
+      --text-dim: #64748b;           /* Slate 500: Inactive states & codes */
+      --text-inverse: #ffffff;       /* Pure white on solid colored buttons */
+
+      /* 30% Core Brand Identity (Empirical Macroeconomic Tones) */
+      --brand-emerald: #047857;      /* Emerald 700: GDP & Economic Growth */
+      --brand-emerald-dim: #ecfdf5;  /* Emerald 50 bg */
+      --brand-emerald-border: #a7f3d0;
+      --brand-amber: #b45309;        /* Warm Bronze Amber 700: Labor & Unemployment */
+      --brand-amber-dim: #fffbeb;    /* Amber 50 bg */
+      --brand-amber-border: #fde68a;
+      --brand-crimson: #be123c;      /* Rose Crimson 700: Inflation CPI */
+      --brand-crimson-dim: #fff1f2;  /* Rose 50 bg */
+      --brand-crimson-border: #fecdd3;
+      --brand-indigo: #3730a3;       /* Indigo 700: Monetary Policy */
+      --brand-indigo-dim: #eef2ff;   /* Indigo 50 bg */
+      --brand-indigo-border: #c7d2fe;
+
+      /* 10% High-Contrast Accent Strictly for CTAs & Focus */
+      --accent-cta: #1d4ed8;         /* Solid Royal Blue CTA */
+      --accent-cta-hover: #1e40af;   /* Darker hover state */
+      --accent-cta-active: #172554;  /* Pressed tactile state */
+      --accent-glow: rgba(29, 78, 216, 0.22);
+      --focus-ring: #2563eb;         /* High-contrast focus outline */
+
+      /* Borders & Light Mode Elevation Shadows */
+      --border-subtle: #dbeafe;      /* Tailwind Blue 100 */
+      --border-medium: #bfdbfe;      /* Tailwind Blue 200 */
+      --border-strong: #93c5fd;      /* Tailwind Blue 300 */
+      --border-accent: rgba(29, 78, 216, 0.4);
+      --shadow-soft: 0 10px 25px -4px rgba(30, 58, 138, 0.08), 0 4px 10px -2px rgba(30, 58, 138, 0.04);
+      --shadow-hover: 0 16px 36px -4px rgba(30, 58, 138, 0.14), 0 6px 14px -2px rgba(30, 58, 138, 0.08);
+      
+      /* Radii */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+      /* Typography Scale (Strictly 6 Sizes) */
+      --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, monospace;
+      
+      --text-size-1: clamp(2rem, 3.8vw + 0.5rem, 2.75rem); /* Display H1 */
+      --text-size-2: 1.75rem;                               /* Section H2 */
+      --text-size-3: 1.125rem;                              /* Card Title H3 */
+      --text-size-4: 0.9375rem;                             /* Body Paragraph P */
+      --text-size-5: 0.8125rem;                             /* Small / Subtext */
+      --text-size-6: 0.6875rem;                             /* Micro / Badges / Code */
+
+      /* 4pt/8pt Spatial Cadence */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-8: 64px;
+      --space-9: 80px;
+    }
+
+    /* Baseline Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--canvas-bg);
+      color: var(--text-primary);
+    }
+
+    body {
+      font-family: var(--font-ui);
+      font-size: var(--text-size-4);
+      line-height: 1.6;
+      background-color: var(--canvas-bg);
+      color: var(--text-muted);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Subtle Light-Blue Graph Paper Grid Pattern on Canvas */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(37, 99, 235, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37, 99, 235, 0.045) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .num-tabular {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 var(--space-5);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ==========================================================================
+       SECTION 1: NAVIGATION HEADER
+       Light Blue Frosted Header with Glass Backdrop
+       ========================================================================== */
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(240, 247, 255, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-medium);
+      box-shadow: 0 2px 10px rgba(30, 58, 138, 0.03);
+      transition: border-color 0.2s ease;
+    }
+
+    .nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 72px;
+      gap: var(--space-4);
+    }
+
+    .brand-logo-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .brand-icon-wrapper {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #1d4ed8 0%, #0369a1 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
+    }
+
+    .brand-text-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: var(--text-size-3);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .brand-badge-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      color: var(--text-muted);
+    }
+
+    .live-pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: var(--text-size-5);
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.15s ease;
+      padding: var(--space-1) 0;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: var(--accent-cta);
+    }
+
+    .nav-link:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 4px;
+      border-radius: 2px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    /* ==========================================================================
+       BUTTON SYSTEM: Strict 1:2 Padding Ratio & 4 Mandatory Visual States
+       ========================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      font-family: var(--font-ui);
+      font-size: var(--text-size-5);
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    /* Standard Button: vertical 10px, horizontal 20px (Strict 1:2) */
+    .btn-md {
+      padding: 10px 20px;
+    }
+
+    /* Large Button: vertical 13px, horizontal 26px (Strict 1:2) */
+    .btn-lg {
+      padding: 13px 26px;
+      font-size: var(--text-size-4);
+    }
+
+    /* Small Button: vertical 8px, horizontal 16px (Strict 1:2) */
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: var(--text-size-5);
+    }
+
+    /* Primary CTA (Solid Accent) */
+    .btn-primary {
+      background-color: var(--accent-cta);
+      color: var(--text-inverse);
+      border: 1px solid var(--accent-cta);
+      box-shadow: 0 2px 10px rgba(29, 78, 216, 0.25);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-cta-hover);
+      border-color: var(--accent-cta-hover);
+      box-shadow: 0 4px 16px rgba(29, 78, 216, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      background-color: var(--accent-cta-active);
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 1px 4px rgba(29, 78, 216, 0.2);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Ghost Button: Strictly secondary adjacent to primary */
+    .btn-ghost {
+      background-color: #ffffff;
+      color: var(--accent-cta);
+      border: 1px solid var(--border-medium);
+      box-shadow: 0 1px 3px rgba(30, 58, 138, 0.05);
+    }
+
+    .btn-ghost:hover {
+      background-color: var(--canvas-subtle);
+      border-color: var(--border-strong);
+      color: var(--accent-cta-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost:active {
+      background-color: var(--border-medium);
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .btn-ghost:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 3px;
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       SECTION 2: HERO SECTION & PRODUCT MOCKUP FRAME
+       ========================================================================== */
+    .hero-section {
+      padding: var(--space-8) 0 var(--space-6);
+      position: relative;
+    }
+
+    .hero-content {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-cta);
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      margin-bottom: var(--space-4);
+    }
+
+    /* Micro-Polish: Letter spacing -2.5%, line-height 115% */
+    h1.hero-headline {
+      font-size: var(--text-size-1);
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      margin-bottom: var(--space-4);
+    }
+
+    .hero-headline span.gradient-text {
+      color: var(--accent-cta);
+      background: linear-gradient(135deg, #1d4ed8 20%, #0284c7 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtext {
+      font-size: var(--text-size-4);
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* Proportional Placement: Action buttons placed at least DOUBLE spatial distance (32px) from subtext */
+    .hero-cta-group {
+      margin-top: var(--space-6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    /* Hero Mockup Device Frame: Real Software UI preview with light elevation */
+    .hero-mockup-wrapper {
+      margin-top: var(--space-7);
+      position: relative;
+      border-radius: var(--radius-lg);
+      padding: 1px;
+      background: linear-gradient(180deg, #bfdbfe 0%, #dbeafe 100%);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .mockup-window {
+      background: var(--canvas-card);
+      border-radius: calc(var(--radius-lg) - 1px);
+      overflow: hidden;
+      border: 1px solid var(--border-medium);
+    }
+
+    .mockup-topbar {
+      height: 40px;
+      background: #e8f2fc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-4);
+      border-bottom: 1px solid var(--border-medium);
+    }
+
+    .mockup-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mockup-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .mockup-dot.red { background: #ef4444; }
+    .mockup-dot.yellow { background: #f59e0b; }
+    .mockup-dot.green { background: #10b981; }
+
+    .mockup-address {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      color: var(--text-secondary);
+      background: #ffffff;
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 2px 14px;
+    }
+
+    .mockup-body {
+      padding: var(--space-5);
+      background: radial-gradient(circle at 50% 0%, rgba(29, 78, 216, 0.03) 0%, transparent 70%), #f8fbff;
+    }
+
+    .mockup-grid-preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+
+    .mockup-stat-pill {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      box-shadow: 0 2px 8px rgba(30, 58, 138, 0.04);
+    }
+
+    .mockup-stat-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .mockup-stat-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .mockup-stat-trend {
+      font-size: var(--text-size-6);
+      font-weight: 600;
+    }
+
+    .peeking-scroll-prompt {
+      height: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: var(--space-4);
+      color: var(--text-secondary);
+      font-size: var(--text-size-6);
+      font-family: var(--font-mono);
+      font-weight: 600;
+      animation: floatPrompt 2.5s ease-in-out infinite;
+    }
+
+    @keyframes floatPrompt {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(5px); opacity: 1; }
+    }
+
+    /* ==========================================================================
+       SECTION 3: CONTINUOUS SOCIAL PROOF RIBBON
+       ========================================================================== */
+    .social-proof-bar {
+      border-top: 1px solid var(--border-medium);
+      border-bottom: 1px solid var(--border-medium);
+      background: #e2effd;
+      padding: var(--space-4) 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ribbon-track {
+      display: flex;
+      gap: var(--space-8);
+      white-space: nowrap;
+      animation: ribbonSlide 35s linear infinite;
+    }
+
+    .ribbon-item {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-size-5);
+      color: var(--text-secondary);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .ribbon-item svg {
+      width: 16px;
+      height: 16px;
+      color: var(--accent-cta);
+    }
+
+    @keyframes ribbonSlide {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ==========================================================================
+       SECTION 4: FEATURE AREA (Dominant Mockups & Interactive Tabs)
+       ========================================================================== */
+    .features-section {
+      padding: var(--space-8) 0;
+    }
+
+    .section-heading-block {
+      text-align: center;
+      max-width: 750px;
+      margin: 0 auto var(--space-7);
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-cta);
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+      display: block;
+    }
+
+    h2.section-title {
+      font-size: var(--text-size-2);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.2;
+      margin-bottom: var(--space-3);
+    }
+
+    .section-description {
+      font-size: var(--text-size-4);
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Tabbed Software Showcase */
+    .feature-tabs-container {
+      background: var(--canvas-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .feature-nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: var(--space-4);
+    }
+
+    .feature-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--text-muted);
+    }
+
+    .feature-tab-btn:hover {
+      background: var(--canvas-subtle);
+      color: var(--text-primary);
+    }
+
+    .feature-tab-btn.tab-active {
+      background: #eff6ff;
+      border-color: #93c5fd;
+      color: var(--accent-cta);
+    }
+
+    .tab-btn-num {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      font-weight: 700;
+      color: var(--accent-cta);
+      display: block;
+      margin-bottom: var(--space-1);
+    }
+
+    .tab-btn-title {
+      font-size: var(--text-size-4);
+      font-weight: 700;
+      color: var(--text-primary);
+      display: block;
+    }
+
+    .feature-panel-display {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: var(--space-6);
+      align-items: center;
+    }
+
+    .feature-panel-copy h3 {
+      font-size: var(--text-size-2);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-3);
+      letter-spacing: -0.015em;
+    }
+
+    .feature-panel-copy p {
+      font-size: var(--text-size-4);
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+      line-height: 1.6;
+    }
+
+    .feature-spec-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .feature-spec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      font-size: var(--text-size-5);
+      color: var(--text-secondary);
+    }
+
+    .feature-spec-item svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent-cta);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Terminal visual in deep obsidian slate for maximum IDE contrast */
+    .feature-panel-visual {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      font-family: var(--font-mono);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+    }
+
+    /* ==========================================================================
+       SECTION 5: INTERACTIVE LIVE SANDBOX & DASHBOARD (REAL PRODUCT UI)
+       ========================================================================== */
+    .sandbox-section {
+      padding: var(--space-8) 0;
+      border-top: 1px solid var(--border-medium);
+    }
+
+    /* Parameter Toolbar */
+    .controls-strip {
+      background: var(--canvas-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-5);
+      margin-bottom: var(--space-6);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .controls-left-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      flex-wrap: wrap;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .control-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+
+    .control-select {
+      background: var(--canvas-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-family: var(--font-ui);
+      font-size: var(--text-size-5);
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+
+    .control-select:focus {
+      border-color: var(--accent-cta);
+      outline: 2px solid rgba(29, 78, 216, 0.2);
+    }
+
+    .controls-right-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .cache-status-indicator {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    /* KPI Indicators Triad: Elevated Crisp White Cards */
+    .indicators-triad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-5);
+      margin-bottom: var(--space-6);
+    }
+
+    .indicator-card {
+      background: var(--canvas-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+      border-top: 4px solid transparent;
+    }
+
+    .indicator-card:hover {
+      background: var(--canvas-card-hover);
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .indicator-card.card-inflation { border-top-color: var(--brand-crimson); }
+    .indicator-card.card-unemployment { border-top-color: var(--brand-amber); }
+    .indicator-card.card-gdp { border-top-color: var(--brand-emerald); }
+
+    .card-meta-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-3);
+    }
+
+    .indicator-title {
+      font-size: var(--text-size-4);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .wb-code-chip {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      color: var(--text-secondary);
+      background: #eff6ff;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid #bfdbfe;
+      font-weight: 600;
+    }
+
+    .indicator-primary-figure {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      margin-bottom: var(--space-2);
+    }
+
+    .indicator-value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .indicator-unit {
+      font-size: var(--text-size-5);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .indicator-delta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-4);
+    }
+
+    .delta-pill-neutral {
+      background: var(--canvas-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-medium);
+    }
+
+    .delta-pill-info {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #93c5fd;
+    }
+
+    .card-footer-meta {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: var(--space-3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      color: var(--text-muted);
+    }
+
+    /* Chart Container Card */
+    .chart-panel-card {
+      background: var(--canvas-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-soft);
+      margin-bottom: var(--space-7);
+    }
+
+    .chart-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .chart-legend-interactive {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .legend-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: var(--canvas-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
+      font-size: var(--text-size-5);
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .legend-btn:hover {
+      background: var(--canvas-subtle);
+      color: var(--text-primary);
+    }
+
+    .legend-btn.legend-disabled {
+      opacity: 0.35;
+      text-decoration: line-through;
+    }
+
+    .legend-swatch {
+      width: 12px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    .chart-canvas-box {
+      position: relative;
+      width: 100%;
+      height: 380px;
+    }
+
+    /* Deterministic NLP Interpretation Grid */
+    .interpretation-card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-5);
+      margin-bottom: var(--space-7);
+    }
+
+    .nlp-briefing-card {
+      background: var(--canvas-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-soft);
+      transition: background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .nlp-briefing-card:hover {
+      background: var(--canvas-card-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .nlp-card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: var(--space-4);
+    }
+
+    .nlp-category-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .nlp-block-section {
+      margin-bottom: var(--space-4);
+    }
+
+    .nlp-block-tag {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-cta);
+      margin-bottom: var(--space-1);
+    }
+
+    .nlp-trend-banner {
+      background: #eff6ff;
+      border-left: 3px solid var(--accent-cta);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-size-5);
+      color: var(--text-primary);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-bottom: var(--space-3);
+      border-top: 1px solid #dbeafe;
+      border-right: 1px solid #dbeafe;
+      border-bottom: 1px solid #dbeafe;
+    }
+
+    .nlp-mechanism-p {
+      font-size: var(--text-size-5);
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Epistemic Guardrail Notice */
+    .epistemic-boundary-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid var(--brand-amber);
+      border-radius: var(--radius-sm);
+      padding: var(--space-4) var(--space-5);
+      display: flex;
+      gap: var(--space-4);
+      align-items: flex-start;
+      margin-bottom: var(--space-6);
+      box-shadow: 0 2px 6px rgba(180, 83, 9, 0.05);
+    }
+
+    .epistemic-boundary-box svg {
+      width: 22px;
+      height: 22px;
+      color: var(--brand-amber);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .epistemic-title {
+      font-size: var(--text-size-4);
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: var(--space-1);
+    }
+
+    .epistemic-body {
+      font-size: var(--text-size-5);
+      color: #78350f;
+      line-height: 1.55;
+    }
+
+    /* Live Economic News Intelligence */
+    .news-intelligence-area {
+      margin-top: var(--space-7);
+    }
+
+    .news-filter-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--canvas-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-5);
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .topic-filter-chips {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .filter-chip {
+      background: var(--canvas-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      font-family: var(--font-ui);
+      font-size: var(--text-size-5);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .filter-chip:hover {
+      background: var(--canvas-subtle);
+      color: var(--text-primary);
+    }
+
+    .filter-chip.chip-active {
+      background: var(--accent-cta);
+      color: var(--text-inverse);
+      border-color: var(--accent-cta);
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-input-wrapper svg {
+      position: absolute;
+      left: 12px;
+      width: 15px;
+      height: 15px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-input-field {
+      background: var(--canvas-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px 8px 36px;
+      font-family: var(--font-ui);
+      font-size: var(--text-size-5);
+      outline: none;
+      width: 260px;
+      transition: all 0.2s ease;
+    }
+
+    .search-input-field:focus {
+      border-color: var(--accent-cta);
+      width: 300px;
+      box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.2);
+    }
+
+    .news-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-5);
+    }
+
+    .news-story-card {
+      background: var(--canvas-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.15s ease;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .news-story-card:hover {
+      background: var(--canvas-card-hover);
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .story-meta-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-3);
+    }
+
+    .category-semantic-pill {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .pill-cat-inflation { background: var(--brand-crimson-dim); color: var(--brand-crimson); border: 1px solid var(--brand-crimson-border); }
+    .pill-cat-employment { background: var(--brand-amber-dim); color: var(--brand-amber); border: 1px solid var(--brand-amber-border); }
+    .pill-cat-gdp { background: var(--brand-emerald-dim); color: var(--brand-emerald); border: 1px solid var(--brand-emerald-border); }
+    .pill-cat-monetary { background: var(--brand-indigo-dim); color: var(--brand-indigo); border: 1px solid var(--brand-indigo-border); }
+    .pill-cat-general { background: var(--canvas-subtle); color: var(--text-secondary); border: 1px solid var(--border-medium); }
+
+    .story-headline-link {
+      font-size: var(--text-size-4);
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+      line-height: 1.4;
+      margin-bottom: var(--space-3);
+      display: block;
+      transition: color 0.15s ease;
+    }
+
+    .story-headline-link:hover {
+      color: var(--accent-cta);
+    }
+
+    .story-snippet {
+      font-size: var(--text-size-5);
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: var(--space-4);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .story-card-footer {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: var(--space-3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      color: var(--text-muted);
+    }
+
+    /* Skeleton Loading State */
+    .skeleton-box {
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: skeletonShimmer 1.8s infinite;
+      border-radius: var(--radius-sm);
+    }
+
+    @keyframes skeletonShimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ==========================================================================
+       SECTION 7: DUAL DEPLOYMENT SPECIFICATION (Collapsible Architecture)
+       ========================================================================== */
+    .arch-details-drawer {
+      background: var(--canvas-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      margin: var(--space-8) 0;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .arch-summary-bar {
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      background: var(--canvas-surface);
+      transition: background-color 0.15s ease;
+    }
+
+    .arch-summary-bar:hover {
+      background: var(--canvas-subtle);
+    }
+
+    .arch-summary-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--text-size-4);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .arch-body-content {
+      padding: var(--space-5);
+      border-top: 1px solid var(--border-subtle);
+      font-size: var(--text-size-4);
+      color: var(--text-muted);
+    }
+
+    .arch-table-spec {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--space-4);
+      font-size: var(--text-size-5);
+    }
+
+    .arch-table-spec th,
+    .arch-table-spec td {
+      border: 1px solid var(--border-subtle);
+      padding: var(--space-3) var(--space-4);
+      text-align: left;
+    }
+
+    .arch-table-spec th {
+      background: var(--canvas-surface);
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .arch-table-spec td code {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      background: #eff6ff;
+      color: #1e3a8a;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ==========================================================================
+       SECTION 8: INSTITUTIONAL FOOTER (Deep Navy Grounding Base)
+       ========================================================================== */
+    footer.site-footer {
+      border-top: 1px solid var(--border-medium);
+      background: #0a192f;
+      color: #cbd5e1;
+      padding: var(--space-9) 0 var(--space-7);
+      position: relative;
+    }
+
+    .footer-cta-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: var(--space-8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      margin-bottom: var(--space-8);
+      flex-wrap: wrap;
+      gap: var(--space-5);
+    }
+
+    .footer-cta-text h3 {
+      font-size: var(--text-size-2);
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-2);
+    }
+
+    .footer-cta-text p {
+      font-size: var(--text-size-4);
+      color: #94a3b8;
+      max-width: 600px;
+    }
+
+    .footer-columns-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: var(--space-7);
+      margin-bottom: var(--space-8);
+    }
+
+    .footer-brand-bio p {
+      font-size: var(--text-size-5);
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-top: var(--space-3);
+    }
+
+    .footer-col-head {
+      font-family: var(--font-mono);
+      font-size: var(--text-size-6);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      margin-bottom: var(--space-4);
+    }
+
+    .footer-links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .footer-link {
+      font-size: var(--text-size-5);
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
+    .footer-bottom-bar {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: var(--space-6);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: var(--text-size-5);
+      color: #64748b;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+    }
+
+    /* Slide-up Toast Notification Chip */
+    .toast-chip {
+      position: fixed;
+      bottom: var(--space-5);
+      right: var(--space-5);
+      background: #ffffff;
+      border: 1px solid var(--accent-cta);
+      color: var(--text-primary);
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 10px 25px rgba(30, 58, 138, 0.2);
+      font-size: var(--text-size-5);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      transform: translateY(120%);
+      opacity: 0;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      z-index: 1000;
+    }
+
+    .toast-chip.toast-visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .indicators-triad-grid,
+      .interpretation-card-grid,
+      .news-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .feature-panel-display {
+        grid-template-columns: 1fr;
+      }
+      .footer-columns-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 768px) {
+      .nav-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .nav-links {
+        display: none;
+      }
+      .nav-links.nav-open {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-medium);
+        padding: var(--space-4) var(--space-5);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+        z-index: 60;
+      }
+      .mockup-grid-preview,
+      .indicators-triad-grid,
+      .interpretation-card-grid,
+      .news-cards-grid,
+      .feature-nav-tabs {
+        grid-template-columns: 1fr;
+      }
+      .controls-strip {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls-left-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .control-item {
+        justify-content: space-between;
+      }
+      .news-filter-strip {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input-field {
+        width: 100%;
+      }
+      .search-input-field:focus {
+        width: 100%;
+      }
+      .footer-columns-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  
+    /* Print view: the "PDF Report" button prints the data sections only */
+    @media print {
+      .site-header,
+      .hero-section,
+      .social-proof-bar,
+      .features-section,
+      .site-footer,
+      .toast-chip,
+      .peeking-scroll-prompt,
+      .controls-strip,
+      .chart-legend-interactive,
+      #pdfBtn,
+      #fetchBtn {
+        display: none !important;
+      }
+      .indicators-triad-grid,
+      .interpretation-card-grid,
+      .news-cards-grid {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      .chart-canvas-box {
+        max-height: 320px;
+      }
+      body {
+        background: #ffffff !important;
+      }
+      .sandbox-section {
+        padding-top: 0 !important;
+      }
+    }
+
+</style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       SECTION 1: NAVIGATION HEADER
+       ========================================================================== -->
+  <header class="site-header" role="banner">
+    <div class="container nav-inner">
+      <a href="#" class="brand-logo-group" aria-label="The Economic Interpreter Homepage">
+        <div class="brand-icon-wrapper" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text-block">
+          <span class="brand-title">The Economic Interpreter</span>
+          <div class="brand-badge-row">
+            <span class="live-pulse" aria-hidden="true"></span>
+            <span>World Bank REST API &bull; Zero-Hallucination NLP</span>
+          </div>
+        </div>
+      </a>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Open navigation menu" aria-expanded="false" onclick="toggleMobileNav()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+        Menu
+      </button>
+
+      <nav class="nav-links" id="mainNavLinks" aria-label="Main Navigation">
+        <a href="#features" class="nav-link">Architecture</a>
+        <a href="#sandbox" class="nav-link">Live Sandbox</a>
+        <a href="#interpretations" class="nav-link">NLP Synthesis</a>
+        <a href="#news" class="nav-link">Economic News</a>
+        <a href="#methodology" class="nav-link">Epistemic Limits</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://share.streamlit.io" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-ghost" title="Launch native Python Streamlit Cloud runtime">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          Streamlit App
+        </a>
+        <a href="#sandbox" class="btn btn-sm btn-primary">
+          Launch Sandbox
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       SECTION 2: HERO SECTION & PRODUCT MOCKUP FRAME
+       ========================================================================== -->
+  <main>
+    <section class="hero-section" aria-labelledby="hero-heading">
+      <div class="container hero-content">
+        <div class="hero-eyebrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>Empirical Data Science Capstone &bull; Open Academic Research</span>
+        </div>
+
+        <h1 id="hero-heading" class="hero-headline">
+          Macroeconomic Intelligence with <span class="gradient-text">Zero-Hallucination NLP</span>
+        </h1>
+
+        <p class="hero-subtext">
+          Connect official World Bank macroeconomic observations with live economic news coverage. Built for economists, students, and financial analysts who demand transparent, deterministic text processing without black-box generative hallucinations.
+        </p>
+
+        <!-- Proportional Placement: 32px gap from subtext (2x the 16px heading gap) -->
+        <div class="hero-cta-group">
+          <a href="#sandbox" class="btn btn-lg btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Explore Live Dashboard
+          </a>
+          <a href="#methodology" class="btn btn-lg btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Epistemic Boundaries
+          </a>
+        </div>
+
+        <!-- Subtle 16px peeking prompt -->
+        <div class="peeking-scroll-prompt">
+          <span>&darr; Scroll down to inspect empirical data</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+       SECTION 3: CONTINUOUS SOCIAL PROOF RIBBON
+       ========================================================================== -->
+    <section class="social-proof-bar" aria-label="Verified Data Sources and Attribution">
+      <div class="ribbon-track">
+        <span class="ribbon-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          World Bank Indicators API
+        </span>
+        <span class="ribbon-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          International Labour Organization (ILO)
+        </span>
+        <span class="ribbon-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Federal Reserve Economic Data (FRED)
+        </span>
+        <span class="ribbon-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Financial Times Macro Taxonomy
+        </span>
+        <span class="ribbon-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          OECD Economic Projections
+        </span>
+        <span class="ribbon-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Streamlit Community Cloud
+        </span>
+        <!-- Duplicated items for seamless infinite scroll -->
+        <span class="ribbon-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          World Bank Indicators API
+        </span>
+        <span class="ribbon-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          International Labour Organization (ILO)
+        </span>
+        <span class="ribbon-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Federal Reserve Economic Data (FRED)
+        </span>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+       SECTION 4: FEATURE SHOWCASE (Dominant Mockups & Tabbed Architecture)
+       ========================================================================== -->
+    <section id="features" class="features-section" aria-labelledby="features-heading">
+      <div class="container">
+        <div class="section-heading-block">
+          <span class="section-eyebrow">Enterprise Data Science Rigor</span>
+          <h2 id="features-heading" class="section-title">Engineered for Explainability and Accuracy</h2>
+          <p class="section-description">
+            Traditional AI summaries frequently hallucinate correlation and invent causation. The Economic Interpreter implements an auditable, deterministic pipeline combining open government data with transparent text extraction.
+          </p>
+        </div>
+
+        <div class="feature-tabs-container">
+          <div class="feature-nav-tabs" role="tablist">
+            <button class="feature-tab-btn tab-active" onclick="switchFeatureTab(0)" role="tab" aria-selected="true">
+              <span class="tab-btn-num">MODULE A</span>
+              <span class="tab-btn-title">Empirical Indicators</span>
+            </button>
+            <button class="feature-tab-btn" onclick="switchFeatureTab(1)" role="tab" aria-selected="false">
+              <span class="tab-btn-num">MODULE B & C</span>
+              <span class="tab-btn-title">Deterministic NLP</span>
+            </button>
+            <button class="feature-tab-btn" onclick="switchFeatureTab(2)" role="tab" aria-selected="false">
+              <span class="tab-btn-num">MODULE D</span>
+              <span class="tab-btn-title">Non-Causal Synthesis</span>
+            </button>
+          </div>
+
+          <!-- Feature Tab Content 0 -->
+          <div class="feature-panel-display" id="featureTab0">
+            <div class="feature-panel-copy">
+              <h3>Direct World Bank REST Integration</h3>
+              <p>
+                Query verified annual indicator series directly from the World Bank API without intermediary scraping. Includes automated validation, missing-year detection, and tabular calculations.
+              </p>
+              <ul class="feature-spec-list">
+                <li class="feature-spec-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>Inflation CPI (FP.CPI.TOTL.ZG)</strong> — Annual percentage change in consumer price indices.</span>
+                </li>
+                <li class="feature-spec-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>Unemployment (SL.UEM.TOTL.ZS)</strong> — Total percentage of national labor force (ILO modeled estimate).</span>
+                </li>
+                <li class="feature-spec-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>Real GDP Growth (NY.GDP.MKTP.KD.ZG)</strong> — Annual growth rate of market prices at constant local currency.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="feature-panel-visual">
+              <div style="color:#60a5fa; margin-bottom:8px;">// World Bank Query Specification</div>
+              <div style="color:#cbd5e1;">GET /v2/country/IN/indicator/FP.CPI.TOTL.ZG</div>
+              <div style="color:#94a3b8; margin-bottom:12px;">Query Parameters: date=2015:2025&format=json</div>
+              <div style="color:#64748b;">[HTTP/1.1 200 OK]</div>
+              <div style="color:#38bdf8;">{</div>
+              <div style="padding-left:14px; color:#cbd5e1;">"country": "India",</div>
+              <div style="padding-left:14px; color:#cbd5e1;">"indicator": "Inflation, consumer prices (%)",</div>
+              <div style="padding-left:14px; color:#cbd5e1;">"latest_obs": <span style="color:#34d399;">&lt;annual_value&gt;</span>,</div>
+              <div style="padding-left:14px; color:#cbd5e1;">"status": "audited_world_bank_record"</div>
+              <div style="color:#38bdf8;">}</div>
+            </div>
+          </div>
+
+          <!-- Feature Tab Content 1 (Hidden initially) -->
+          <div class="feature-panel-display" id="featureTab1" style="display:none;">
+            <div class="feature-panel-copy">
+              <h3>Rule-Based Economic Text Categorization</h3>
+              <p>
+                News articles from verified feeds are normalized, tokenized, and classified into 5 macroeconomic domains using curated economic lexicons. No random parameter weights or opaque black boxes.
+              </p>
+              <ul class="feature-spec-list">
+                <li class="feature-spec-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>Transparent Keywords</strong> — Matches domain terms like repo rate, price pressure, and payrolls.</span>
+                </li>
+                <li class="feature-spec-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>URL & Title Deduplication</strong> — Automatically purges syndicated wire reprints.</span>
+                </li>
+                <li class="feature-spec-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>Keyword Provenance</strong> — Explicitly displays the exact keywords triggering categorization.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="feature-panel-visual">
+              <div style="color:#60a5fa; margin-bottom:8px;">// NLP Categorization Engine</div>
+              <div style="color:#cbd5e1;">def categorize_headline(headline: str) -> dict:</div>
+              <div style="padding-left:14px; color:#94a3b8;">tokens = normalize_and_tokenize(headline)</div>
+              <div style="padding-left:14px; color:#94a3b8;">matched = match_domain_lexicon(tokens)</div>
+              <div style="padding-left:14px; color:#cbd5e1;">return {</div>
+              <div style="padding-left:28px; color:#34d399;">"category": "Monetary Policy",</div>
+              <div style="padding-left:28px; color:#cbd5e1;">"matched_keywords": ["repo rate", "rbi", "liquidity"],</div>
+              <div style="padding-left:28px; color:#cbd5e1;">"hallucination_risk": 0.00%</div>
+              <div style="padding-left:14px; color:#cbd5e1;">}</div>
+            </div>
+          </div>
+
+          <!-- Feature Tab Content 2 (Hidden initially) -->
+          <div class="feature-panel-display" id="featureTab2" style="display:none;">
+            <div class="feature-panel-copy">
+              <h3>Academic Epistemic Guardrails</h3>
+              <p>
+                The interpretation engine pairs empirical observations with news coverage through deterministic Python templates. It explicitly refuses to claim causation from correlation or temporal alignment.
+              </p>
+              <ul class="feature-spec-list">
+                <li class="feature-spec-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>Transmission Explanations</strong> — Outlines plausible economic mechanisms without declaring causality.</span>
+                </li>
+                <li class="feature-spec-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>Reporting Lag Awareness</strong> — Contrasts annual statistical updates with fast-moving weekly headlines.</span>
+                </li>
+                <li class="feature-spec-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span><strong>Auditable Output</strong> — Every sentence traces directly to verified input records.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="feature-panel-visual">
+              <div style="color:#fbbf24; margin-bottom:8px;">// Epistemic Guardrail Specification</div>
+              <div style="color:#f59e0b;">ASSERT: correlation != causation</div>
+              <div style="color:#cbd5e1;">observation_period = 2023 (annual calendar)</div>
+              <div style="color:#cbd5e1;">news_window = 2025 (current sentiment)</div>
+              <div style="color:#e2e8f0; margin-top:10px;">
+                "Inflation eased by 1.30 pp. Several articles discuss vegetable prices and agricultural supply. While food costs influence CPI baskets, news co-occurrence alone does not prove causation."
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+       SECTION 5: INTERACTIVE LIVE SANDBOX & DASHBOARD (REAL PRODUCT UI)
+       ========================================================================== -->
+    <section id="sandbox" class="sandbox-section" aria-labelledby="sandbox-heading">
+      <div class="container">
+        <div class="section-heading-block">
+          <span class="section-eyebrow">Interactive Live Sandbox</span>
+          <h2 id="sandbox-heading" class="section-title">Empirical Macroeconomic Dashboard</h2>
+          <p class="section-description">
+            Explore live indicators fetched from the World Bank API and categorized news. Toggle economies and observation horizons to see instant, deterministic synthesis.
+          </p>
+        </div>
+
+        <!-- Controls Toolbar -->
+        <div class="controls-strip" role="region" aria-label="Sandbox Parameters">
+          <div class="controls-left-group">
+            <div class="control-item">
+              <label for="countrySelect" class="control-label">Economy / Country:</label>
+              <select id="countrySelect" class="control-select" onchange="triggerDataFetch()">
+                <option value="IN" selected>India (IN) — Primary Target</option>
+                <option value="US">United States (US)</option>
+                <option value="CN">China (CN)</option>
+                <option value="GB">United Kingdom (GB)</option>
+                <option value="DE">Germany (DE)</option>
+                <option value="JP">Japan (JP)</option>
+                <option value="AE">United Arab Emirates (AE)</option>
+                <option value="SG">Singapore (SG)</option>
+              </select>
+            </div>
+
+            <div class="control-item">
+              <label for="compareSelect" class="control-label">Compare With:</label>
+              <select id="compareSelect" class="control-select" onchange="triggerCompareFetch()">
+                <option value="" selected>— No comparison —</option>
+                <option value="IN">India (IN)</option>
+                <option value="US">United States (US)</option>
+                <option value="CN">China (CN)</option>
+                <option value="GB">United Kingdom (GB)</option>
+                <option value="DE">Germany (DE)</option>
+                <option value="JP">Japan (JP)</option>
+                <option value="AE">United Arab Emirates (AE)</option>
+                <option value="SG">Singapore (SG)</option>
+              </select>
+            </div>
+
+            <div class="control-item">
+              <label for="rangeSelect" class="control-label">Time Window:</label>
+              <select id="rangeSelect" class="control-select" onchange="triggerDataFetch()">
+                <option value="2015:2025" selected>2015 – 2025 (10-Year Trend)</option>
+                <option value="2010:2025">2010 – 2025 (15-Year Horizon)</option>
+                <option value="2000:2025">2000 – 2025 (Quarter-Century)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="controls-right-group">
+            <div class="cache-status-indicator">
+              <span class="live-pulse" style="width:5px; height:5px;"></span>
+              <span id="cacheStatusText">Client Cache: Fresh</span>
+            </div>
+            <button id="pdfBtn" class="btn btn-sm btn-ghost" onclick="window.print()" title="Opens the print dialog - choose 'Save as PDF' to download a report of this analysis">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>PDF Report</span>
+            </button>
+            <button id="fetchBtn" class="btn btn-sm btn-primary" onclick="triggerDataFetch(true)">
+              <svg id="fetchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+              </svg>
+              <span id="fetchBtnText">Query World Bank API</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Triad: Elevated Crisp White Cards -->
+        <div class="indicators-triad-grid" id="indicatorsTriad">
+          <!-- Inflation Card -->
+          <article class="indicator-card card-inflation" id="card-inflation">
+            <div class="card-meta-head">
+              <span class="indicator-title">Inflation Rate</span>
+              <span class="wb-code-chip">FP.CPI.TOTL.ZG</span>
+            </div>
+            <div>
+              <div class="indicator-primary-figure">
+                <span class="indicator-value num-tabular" id="val-inflation">--</span>
+                <span class="indicator-unit">annual %</span>
+              </div>
+              <span class="indicator-delta-pill delta-pill-neutral num-tabular" id="delta-inflation">Awaiting API query...</span>
+            </div>
+            <div class="card-footer-meta">
+              <span id="period-inflation">Latest Period: --</span>
+              <span>Source: World Bank</span>
+            </div>
+          </article>
+
+          <!-- Unemployment Card -->
+          <article class="indicator-card card-unemployment" id="card-unemployment">
+            <div class="card-meta-head">
+              <span class="indicator-title">Unemployment Rate</span>
+              <span class="wb-code-chip">SL.UEM.TOTL.ZS</span>
+            </div>
+            <div>
+              <div class="indicator-primary-figure">
+                <span class="indicator-value num-tabular" id="val-unemployment">--</span>
+                <span class="indicator-unit">% of labor force</span>
+              </div>
+              <span class="indicator-delta-pill delta-pill-neutral num-tabular" id="delta-unemployment">Awaiting API query...</span>
+            </div>
+            <div class="card-footer-meta">
+              <span id="period-unemployment">Latest Period: --</span>
+              <span>Source: World Bank (ILO)</span>
+            </div>
+          </article>
+
+          <!-- GDP Growth Card -->
+          <article class="indicator-card card-gdp" id="card-gdp">
+            <div class="card-meta-head">
+              <span class="indicator-title">Real GDP Growth</span>
+              <span class="wb-code-chip">NY.GDP.MKTP.KD.ZG</span>
+            </div>
+            <div>
+              <div class="indicator-primary-figure">
+                <span class="indicator-value num-tabular" id="val-gdp">--</span>
+                <span class="indicator-unit">annual %</span>
+              </div>
+              <span class="indicator-delta-pill delta-pill-neutral num-tabular" id="delta-gdp">Awaiting API query...</span>
+            </div>
+            <div class="card-footer-meta">
+              <span id="period-gdp">Latest Period: --</span>
+              <span>Source: World Bank</span>
+            </div>
+          </article>
+        </div>
+
+        <!-- Interactive Time Series Visualizer -->
+        <div class="chart-panel-card">
+          <div class="chart-panel-header">
+            <div>
+              <h3 style="font-size:var(--text-size-3); font-weight:700; color:var(--text-primary); margin-bottom:4px;">
+                Comparative Historical Macroeconomic Trajectory
+              </h3>
+              <p style="font-size:var(--text-size-5); color:var(--text-muted);">
+                Synchronized annual observations. Click any indicator chip to toggle the series visibility.
+              </p>
+            </div>
+            <div class="chart-legend-interactive" id="chartCustomLegend">
+              <button class="legend-btn" onclick="toggleChartDataset(0)">
+                <span class="legend-swatch" style="background:#be123c;"></span>
+                <span>Inflation CPI (%)</span>
+              </button>
+              <button class="legend-btn" onclick="toggleChartDataset(1)">
+                <span class="legend-swatch" style="background:#b45309;"></span>
+                <span>Unemployment (%)</span>
+              </button>
+              <button class="legend-btn" onclick="toggleChartDataset(2)">
+                <span class="legend-swatch" style="background:#047857;"></span>
+                <span>Real GDP Growth (%)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="chart-canvas-box">
+            <canvas id="macroTimeChart"></canvas>
+          </div>
+
+          <div style="margin-top:var(--space-3); padding-top:var(--space-3); border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; font-size:var(--text-size-6); color:var(--text-muted); font-family:var(--font-mono);">
+            <span>Units: Annual percentage change & percentage of modeled labor force.</span>
+            <span>API Source: World Bank Official Time Series</span>
+          </div>
+        </div>
+
+        <!-- Academic Epistemic Boundaries Banner -->
+        <div id="methodology" class="epistemic-boundary-box" role="note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <div>
+            <div class="epistemic-title">Academic Notice & Epistemic Boundaries (Non-Causal Rule)</div>
+            <div class="epistemic-body">
+              <strong>1. Reporting Lag Discrepancy:</strong> Official macroeconomic indicators from the World Bank are collected annually with verification lags, whereas financial news coverage tracks weekly sentiment.<br>
+              <strong>2. Correlation &ne; Causation:</strong> Semantic alignment between news topics and indicator trends highlights potential economic transmission mechanisms, but does not prove direct causality.<br>
+              <strong>3. Auditable Transparency:</strong> All conclusions are generated using deterministic Python templates and transparent keyword lexicons. Zero generative LLMs are used to fabricate conclusions.
+            </div>
+          </div>
+        </div>
+
+        <!-- Evidence-Based Deterministic NLP Interpretation Section -->
+        <!-- Country Comparison Panel (hidden until a comparison country is chosen) -->
+        <div id="comparisonPanel" class="chart-panel-card" style="display:none; margin-bottom:var(--space-8);">
+          <div class="chart-panel-header">
+            <div>
+              <h3 style="font-size:var(--text-size-2); margin:0;">Country Comparison</h3>
+              <p id="compareSubtitle" style="margin:4px 0 0; color:var(--text-secondary); font-size:var(--text-size-5);">
+                Same indicators, two economies, only genuinely recorded World Bank observations.
+              </p>
+            </div>
+            <div class="control-item" style="min-width:220px;">
+              <label for="compareIndicatorSelect" class="control-label">Indicator:</label>
+              <select id="compareIndicatorSelect" class="control-select" onchange="renderComparison()"></select>
+            </div>
+          </div>
+          <div class="chart-canvas-box">
+            <canvas id="compareChart"></canvas>
+          </div>
+          <div style="overflow-x:auto; margin-top:var(--space-4);">
+            <table id="compareTable" style="width:100%; border-collapse:collapse; font-size:var(--text-size-5);"></table>
+          </div>
+          <p style="margin-top:var(--space-3); font-size:var(--text-size-6); color:var(--text-muted);">
+            Each value carries its own reporting year - the latest available year can differ between countries. Gaps are years without a recorded observation, never invented numbers.
+          </p>
+        </div>
+
+        <!-- Analytics Suite: News Pulse, Shock Radar, Outlook Engine, LinkLens -->
+        <div id="analytics" style="margin-bottom:var(--space-8);">
+          <div class="section-heading-block" style="margin-bottom:var(--space-5);">
+            <h2 class="section-title" style="font-size:var(--text-size-1);">Deterministic Analytics Suite</h2>
+            <p style="color:var(--text-secondary);">
+              Four transparent, fully offline analyses - no AI, no black boxes. The same methods run in the Streamlit app.
+            </p>
+          </div>
+          <div class="interpretation-card-grid">
+            <article class="nlp-briefing-card" id="cardNewsPulse">
+              <div class="nlp-card-header">
+                <span class="nlp-category-dot" style="background:#9b59b6;"></span>
+                <span style="font-size:var(--text-size-4); font-weight:700; color:var(--text-primary);">News Pulse</span>
+              </div>
+              <p class="nlp-mechanism-p" style="margin-top:var(--space-3);">
+                Reads the tone of every headline with the published VADER lexicon (offline, deterministic).
+              </p>
+              <div id="newsPulseBody" style="margin-top:var(--space-3); font-size:var(--text-size-5); color:var(--text-secondary);">
+                Awaiting analytics query...
+              </div>
+            </article>
+            <article class="nlp-briefing-card" id="cardShockRadar">
+              <div class="nlp-card-header">
+                <span class="nlp-category-dot" style="background:#c0392b;"></span>
+                <span style="font-size:var(--text-size-4); font-weight:700; color:var(--text-primary);">Shock Radar</span>
+              </div>
+              <p class="nlp-mechanism-p" style="margin-top:var(--space-3);">
+                Flags years where an indicator moved unusually sharply versus its own history (z-score rule).
+              </p>
+              <div id="shockRadarBody" style="margin-top:var(--space-3); font-size:var(--text-size-5); color:var(--text-secondary);">
+                Awaiting analytics query...
+              </div>
+            </article>
+            <article class="nlp-briefing-card" id="cardOutlook">
+              <div class="nlp-card-header">
+                <span class="nlp-category-dot" style="background:#2980b9;"></span>
+                <span style="font-size:var(--text-size-4); font-weight:700; color:var(--text-primary);">Outlook Engine</span>
+              </div>
+              <p class="nlp-mechanism-p" style="margin-top:var(--space-3);">
+                Extends each indicator's straight-line trend a few years forward. Illustrative only, never a prediction.
+              </p>
+              <div id="outlookBody" style="margin-top:var(--space-3); font-size:var(--text-size-5); color:var(--text-secondary);">
+                Awaiting analytics query...
+              </div>
+            </article>
+            <article class="nlp-briefing-card" id="cardLinkLens">
+              <div class="nlp-card-header">
+                <span class="nlp-category-dot" style="background:#16a085;"></span>
+                <span style="font-size:var(--text-size-4); font-weight:700; color:var(--text-primary);">LinkLens</span>
+              </div>
+              <p class="nlp-mechanism-p" style="margin-top:var(--space-3);">
+                Checks whether news tone and indicator changes move together over genuinely overlapping years. Correlation is not causation.
+              </p>
+              <div id="linklensBody" style="margin-top:var(--space-3); font-size:var(--text-size-5); color:var(--text-secondary);">
+                Awaiting analytics query...
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div id="interpretations" style="margin-bottom:var(--space-8);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--space-4);">
+            <div>
+              <span class="section-eyebrow">Module D &bull; Deterministic Explanations</span>
+              <h3 style="font-size:var(--text-size-2); font-weight:700; color:var(--text-primary); letter-spacing:-0.015em;">
+                Evidence-Based Economic Synthesis
+              </h3>
+            </div>
+            <span style="font-family:var(--font-mono); font-size:var(--text-size-6); color:var(--text-muted);">
+              Deterministic Rule Engine v2.4
+            </span>
+          </div>
+
+          <div class="interpretation-card-grid" id="interpretationGrid">
+            <div class="skeleton-box" style="height:260px; grid-column:1/-1;"></div>
+          </div>
+        </div>
+
+        <!-- Topic-Categorized Economic News Section -->
+        <div id="news" class="news-intelligence-area">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--space-4); flex-wrap:wrap; gap:var(--space-3);">
+            <div>
+              <span class="section-eyebrow">Module B & C &bull; Live Intelligence</span>
+              <h3 style="font-size:var(--text-size-2); font-weight:700; color:var(--text-primary); letter-spacing:-0.015em;">
+                Topic-Categorized Economic News
+              </h3>
+            </div>
+            <span style="font-family:var(--font-mono); font-size:var(--text-size-6); color:var(--text-muted);">
+              Normalized & Deduplicated Feed
+            </span>
+          </div>
+
+          <!-- News Filter & 500ms Debounced Search Strip -->
+          <div class="news-filter-strip">
+            <div class="topic-filter-chips" id="topicChips">
+              <button class="filter-chip chip-active" data-topic="all" onclick="filterNewsTopic('all')">All Articles</button>
+              <button class="filter-chip" data-topic="Inflation" onclick="filterNewsTopic('Inflation')">Inflation</button>
+              <button class="filter-chip" data-topic="Employment" onclick="filterNewsTopic('Employment')">Employment</button>
+              <button class="filter-chip" data-topic="GDP and economic growth" onclick="filterNewsTopic('GDP and economic growth')">GDP & Growth</button>
+              <button class="filter-chip" data-topic="Monetary policy" onclick="filterNewsTopic('Monetary policy')">Monetary Policy</button>
+              <button class="filter-chip" data-topic="Other economic news" onclick="filterNewsTopic('Other economic news')">Other Macro</button>
+            </div>
+
+            <div class="search-input-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="newsSearchInput" class="search-input-field" placeholder="Search keywords..." oninput="onSearchInputDebounced(this.value)">
+            </div>
+          </div>
+
+          <!-- News Cards Container -->
+          <div class="news-cards-grid" id="newsGrid">
+            <div class="skeleton-box" style="height:220px;"></div>
+            <div class="skeleton-box" style="height:220px;"></div>
+            <div class="skeleton-box" style="height:220px;"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+       SECTION 7: DUAL DEPLOYMENT SPECIFICATION (Collapsible Architecture)
+       ========================================================================== -->
+    <section class="container">
+      <details class="arch-details-drawer">
+        <summary class="arch-summary-bar">
+          <div class="arch-summary-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+              <line x1="6" y1="6" x2="6.01" y2="6"></line>
+              <line x1="6" y1="18" x2="6.01" y2="18"></line>
+            </svg>
+            <span>Technical Architecture: Dual-Runtime Deployment & Governance</span>
+          </div>
+          <span style="font-size:var(--text-size-6); font-family:var(--font-mono); color:var(--accent-cta); font-weight:700;">
+            Inspect Engineering Matrix &darr;
+          </span>
+        </summary>
+        <div class="arch-body-content">
+          <p>
+            The project implements a <strong>dual-runtime architecture</strong> designed to satisfy both edge web distribution and stateful academic evaluation without code duplication:
+          </p>
+
+          <table class="arch-table-spec">
+            <thead>
+              <tr>
+                <th>Runtime Dimension</th>
+                <th>Vercel Serverless Edge (Production Public)</th>
+                <th>Streamlit Community Cloud (Academic Benchmark)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Entry Point</strong></td>
+                <td><code>api/index.py</code> (@vercel/python runtime)</td>
+                <td><code>app.py</code> (Tornado Web Framework)</td>
+              </tr>
+              <tr>
+                <td><strong>Protocol</strong></td>
+                <td>Stateless HTTP REST (<code>/api?action=...</code>)</td>
+                <td>Stateful Bi-directional WebSockets (<code>ws://</code>)</td>
+              </tr>
+              <tr>
+                <td><strong>Frontend Delivery</strong></td>
+                <td>Semantic HTML5, Plus Jakarta Sans, Chart.js</td>
+                <td>Reactive Streamlit Component Tree with Plotly</td>
+              </tr>
+              <tr>
+                <td><strong>Caching Strategy</strong></td>
+                <td>5-minute client-side memory cache + serverless cache</td>
+                <td><code>@st.cache_data(ttl=3600)</code> memory cache</td>
+              </tr>
+              <tr>
+                <td><strong>Target Audience</strong></td>
+                <td>Instant mobile/desktop web browsing</td>
+                <td>Interactive classroom inspection & parameter testing</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       SECTION 8: INSTITUTIONAL FOOTER (Deep Navy Grounding Base)
+       ========================================================================== -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-cta-banner">
+        <div class="footer-cta-text">
+          <h3>Explore Empirical Macroeconomic Signals with Confidence</h3>
+          <p>
+            Built as an academic Data Science Capstone. Powered by official World Bank open indicators and auditable Python text categorization.
+          </p>
+        </div>
+        <div>
+          <a href="#sandbox" class="btn btn-lg btn-primary">
+            Launch Interactive Sandbox
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-columns-row">
+        <div class="footer-brand-bio">
+          <span class="brand-title" style="font-size:1.15rem; color:#ffffff;">The Economic Interpreter</span>
+          <p>
+            An open educational data science platform bridging official macroeconomic data and live financial journalism through explainable NLP.
+          </p>
+          <p style="margin-top:12px; font-family:var(--font-mono); font-size:var(--text-size-6); color:#94a3b8;">
+            Academic Capstone Research Project &bull; BSc Data Science
+          </p>
+        </div>
+
+        <div>
+          <h4 class="footer-col-head">Core Indicators</h4>
+          <ul class="footer-links-list">
+            <li><a href="#sandbox" class="footer-link">Inflation Rate (CPI %)</a></li>
+            <li><a href="#sandbox" class="footer-link">Unemployment Rate (%)</a></li>
+            <li><a href="#sandbox" class="footer-link">Real GDP Growth (%)</a></li>
+            <li><a href="#sandbox" class="footer-link">Historical Multi-Series</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-head">NLP & Methodology</h4>
+          <ul class="footer-links-list">
+            <li><a href="#features" class="footer-link">Lexicon Categorization</a></li>
+            <li><a href="#methodology" class="footer-link">Non-Causal Principles</a></li>
+            <li><a href="#methodology" class="footer-link">Collection Lags</a></li>
+            <li><a href="#methodology" class="footer-link">Academic Integrity</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-head">Data Provenance</h4>
+          <ul class="footer-links-list">
+            <li><a href="https://data.worldbank.org/" target="_blank" rel="noopener noreferrer" class="footer-link">World Bank Open Data</a></li>
+            <li><a href="https://www.ilo.org/" target="_blank" rel="noopener noreferrer" class="footer-link">ILO Labor Estimates</a></li>
+            <li><a href="https://news.google.com/" target="_blank" rel="noopener noreferrer" class="footer-link">Public Economic RSS</a></li>
+            <li><a href="https://share.streamlit.io" target="_blank" rel="noopener noreferrer" class="footer-link">Streamlit Cloud App</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <span>&copy; 2026 The Economic Interpreter. Academic Capstone Research Project.</span>
+        <span>Strictly for educational research. Not investment or financial advisory.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Slide-up Toast Notification Chip -->
+  <div id="toastNotification" class="toast-chip" role="status" aria-live="polite">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span id="toastMessage">Query updated successfully</span>
+  </div>
+
+  <!-- ==========================================================================
+       FRONTEND SYSTEM ARCHITECTURE: Modular Engine, 500ms Debounce,
+       5-Minute Client-Side Cache, Chart.js Integration
+       ========================================================================== -->
+  <script>
+    /**
+     * Application State Store & Cache Manager
+     */
+    const AppState = {
+      country: 'IN',
+      range: '2015:2025',
+      rawArticles: [],
+      activeTopic: 'all',
+      searchQuery: '',
+      chartInstance: null,
+      searchDebounceTimer: null,
+      // 5-minute client-side caching store (prevents redundant network fetches)
+      cache: new Map(),
+      staleTimeMs: 5 * 60 * 1000,
+      compareData: null,
+      compareChart: null,
+      analyticsCache: new Map()
+    };
+
+    /**
+     * Display registry for all supported indicators (color per series).
+     */
+    const INDICATOR_DISPLAY = {
+      inflation: { label: 'Inflation Rate (CPI %)', color: '#be123c' },
+      unemployment: { label: 'Unemployment Rate (%)', color: '#b45309' },
+      gdp_growth: { label: 'Real GDP Growth (%)', color: '#047857' },
+      gdp_per_capita_growth: { label: 'GDP per Capita Growth (%)', color: '#0d9488' },
+      exports_gdp: { label: 'Exports of Goods & Services (% of GDP)', color: '#1d4ed8' },
+      fdi_inflows_gdp: { label: 'FDI Net Inflows (% of GDP)', color: '#7c3aed' }
+    };
+    const FALLBACK_COLORS = ['#be123c', '#b45309', '#047857', '#0d9488', '#1d4ed8', '#7c3aed'];
+
+    /**
+     * Mobile Navigation Toggle
+     */
+    function toggleMobileNav() {
+      const nav = document.getElementById('mainNavLinks');
+      const btn = document.getElementById('navToggle');
+      if (!nav) return;
+      const open = nav.classList.toggle('nav-open');
+      if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    document.addEventListener('click', (ev) => {
+      const nav = document.getElementById('mainNavLinks');
+      const btn = document.getElementById('navToggle');
+      if (!nav || !nav.classList.contains('nav-open')) return;
+      if (nav.contains(ev.target) || (btn && btn.contains(ev.target))) {
+        if (ev.target.classList && ev.target.classList.contains('nav-link')) {
+          nav.classList.remove('nav-open');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+        return;
+      }
+      nav.classList.remove('nav-open');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+
+    /**
+     * Toast Micro-Interaction Helper
+     */
+    function showToast(message) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      if (!toast || !toastMsg) return;
+
+      toastMsg.innerText = message;
+      toast.classList.add('toast-visible');
+
+      setTimeout(() => {
+        toast.classList.remove('toast-visible');
+      }, 3200);
+    }
+
+    /**
+     * Tab Switcher for Feature Area Showcase
+     */
+    function switchFeatureTab(index) {
+      const buttons = document.querySelectorAll('.feature-tab-btn');
+      const panels = [
+        document.getElementById('featureTab0'),
+        document.getElementById('featureTab1'),
+        document.getElementById('featureTab2')
+      ];
+
+      buttons.forEach((btn, i) => {
+        if (i === index) {
+          btn.classList.add('tab-active');
+          btn.setAttribute('aria-selected', 'true');
+        } else {
+          btn.classList.remove('tab-active');
+          btn.setAttribute('aria-selected', 'false');
+        }
+      });
+
+      panels.forEach((p, i) => {
+        if (p) p.style.display = (i === index) ? 'grid' : 'none';
+      });
+    }
+
+    /**
+     * Format numbers into tabular currency/percent strings
+     */
+    const formatPercent = (val) => (val !== null && val !== undefined) ? `${Number(val).toFixed(2)}%` : 'N/A';
+
+    const formatDeltaPill = (change, prevYear) => {
+      if (change === null || change === undefined) {
+        return { text: 'Baseline period', className: 'delta-pill-neutral' };
+      }
+      const sign = change > 0 ? '+' : '';
+      const text = `${sign}${Number(change).toFixed(2)} pp vs ${prevYear || 'prior'}`;
+      return { text, className: 'delta-pill-info' };
+    };
+
+    /**
+     * Master Data Fetcher with 5-Minute Client-Side Caching
+     */
+    async function triggerDataFetch(forceBypassCache = false) {
+      const country = document.getElementById('countrySelect').value;
+      const range = document.getElementById('rangeSelect').value;
+      const fetchBtn = document.getElementById('fetchBtn');
+      const fetchBtnText = document.getElementById('fetchBtnText');
+      const cacheStatusText = document.getElementById('cacheStatusText');
+
+      AppState.country = country;
+      AppState.range = range;
+
+      const cacheKey = `${country}_${range}`;
+      const now = Date.now();
+
+      // Check if fresh cache exists
+      if (!forceBypassCache && AppState.cache.has(cacheKey)) {
+        const cached = AppState.cache.get(cacheKey);
+        if (now - cached.timestamp < AppState.staleTimeMs) {
+          cacheStatusText.innerText = 'Cached Query (Instant)';
+          renderAllData(cached.indicators, cached.interpretations, cached.articles);
+          showToast(`Loaded cached observations for ${country}`);
+          return;
+        }
+      }
+
+      // Live Network Query
+      fetchBtn.disabled = true;
+      fetchBtnText.innerText = 'Fetching...';
+      cacheStatusText.innerText = 'Querying World Bank REST API...';
+
+      try {
+        const [indRes, interpRes, newsRes] = await Promise.allSettled([
+          fetch(`/api?action=indicators&country=${country}&range=${range}`).then(r => r.json()),
+          fetch(`/api?action=interpret&country=${country}&range=${range}&use_sample=false`).then(r => r.json()),
+          fetch(`/api?action=news&use_sample=false`).then(r => r.json())
+        ]);
+
+        const indicators = (indRes.status === 'fulfilled' && indRes.value.indicators) ? indRes.value.indicators : null;
+        const interpretations = (interpRes.status === 'fulfilled' && interpRes.value.interpretations) ? interpRes.value.interpretations : null;
+        const articles = (newsRes.status === 'fulfilled' && newsRes.value.articles) ? newsRes.value.articles : [];
+
+        // Store into client-side cache
+        AppState.cache.set(cacheKey, {
+          timestamp: now,
+          indicators,
+          interpretations,
+          articles
+        });
+
+        renderAllData(indicators, interpretations, articles);
+        cacheStatusText.innerText = `Updated: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        showToast(`Refreshed live data for ${country}`);
+
+      } catch (err) {
+        console.error('Data retrieval failed:', err);
+        cacheStatusText.innerText = 'Network error: Check connectivity';
+        showToast('Error querying external API');
+      } finally {
+        fetchBtn.disabled = false;
+        fetchBtnText.innerText = 'Query World Bank API';
+      }
+    }
+
+    /**
+     * Centralized Rendering Orchestrator
+     */
+    function renderAllData(indicators, interpretations, articles) {
+      if (indicators) {
+        renderIndicators(indicators);
+        renderChart(indicators);
+        triggerAnalyticsFetch();
+        if (AppState.compareData || (document.getElementById('compareSelect') || {}).value) {
+          triggerCompareFetch();
+        }
+      }
+      if (interpretations) {
+        renderInterpretations(interpretations);
+      }
+      if (articles) {
+        AppState.rawArticles = articles;
+        applyNewsFilter();
+      }
+    }
+
+    /**
+     * Render KPI Indicator Cards
+     */
+    function renderIndicators(indicators) {
+      // 1. Inflation
+      const inf = indicators.inflation?.summary || {};
+      document.getElementById('val-inflation').innerText = formatPercent(inf.latest_value);
+      const infDelta = formatDeltaPill(inf.change, inf.previous_year);
+      const infDeltaEl = document.getElementById('delta-inflation');
+      infDeltaEl.innerText = infDelta.text;
+      infDeltaEl.className = `indicator-delta-pill ${infDelta.className} num-tabular`;
+      document.getElementById('period-inflation').innerText = `Period: ${inf.latest_year || 'N/A'}`;
+
+      // 2. Unemployment
+      const uem = indicators.unemployment?.summary || {};
+      document.getElementById('val-unemployment').innerText = formatPercent(uem.latest_value);
+      const uemDelta = formatDeltaPill(uem.change, uem.previous_year);
+      const uemDeltaEl = document.getElementById('delta-unemployment');
+      uemDeltaEl.innerText = uemDelta.text;
+      uemDeltaEl.className = `indicator-delta-pill ${uemDelta.className} num-tabular`;
+      document.getElementById('period-unemployment').innerText = `Period: ${uem.latest_year || 'N/A'}`;
+
+      // 3. GDP Growth
+      const gdp = indicators.gdp_growth?.summary || {};
+      document.getElementById('val-gdp').innerText = formatPercent(gdp.latest_value);
+      const gdpDelta = formatDeltaPill(gdp.change, gdp.previous_year);
+      const gdpDeltaEl = document.getElementById('delta-gdp');
+      gdpDeltaEl.innerText = gdpDelta.text;
+      gdpDeltaEl.className = `indicator-delta-pill ${gdpDelta.className} num-tabular`;
+      document.getElementById('period-gdp').innerText = `Period: ${gdp.latest_year || 'N/A'}`;
+
+      // Additional indicators (GDP per capita, exports, FDI) get generated cards
+      const grid = document.getElementById('indicatorsTriad');
+      if (grid) {
+        grid.querySelectorAll('.indicator-card-extra').forEach(el => el.remove());
+        const extraKeys = Object.keys(indicators).filter(k => !['inflation', 'unemployment', 'gdp_growth'].includes(k));
+        extraKeys.forEach(k => {
+          const item = indicators[k] || {};
+          const meta = item.metadata || {};
+          const summary = item.summary || {};
+          const delta = formatDeltaPill(summary.change, summary.previous_year);
+          const display = INDICATOR_DISPLAY[k] || { color: '#475569' };
+          const card = document.createElement('article');
+          card.className = 'indicator-card indicator-card-extra';
+          card.innerHTML = `
+            <div class="card-meta-head">
+              <span class="indicator-title">${escapeHtml(meta.name || k)}</span>
+              <span class="wb-code-chip">${escapeHtml(meta.code || '')}</span>
+            </div>
+            <div>
+              <div class="indicator-primary-figure">
+                <span class="indicator-value num-tabular">${formatPercent(summary.latest_value)}</span>
+                <span class="indicator-unit">${escapeHtml(meta.unit || '%')}</span>
+              </div>
+              <span class="indicator-delta-pill ${delta.className} num-tabular">${delta.text}</span>
+            </div>
+            <div class="card-footer-meta">
+              <span>Period: ${summary.latest_year || 'N/A'}</span>
+              <span>Source: World Bank</span>
+            </div>
+          `;
+          card.style.borderTop = `3px solid ${display.color}`;
+          grid.appendChild(card);
+        });
+      }
+    }
+
+    /**
+     * Render Interactive Multi-Series Time Chart via Chart.js
+     */
+    function renderChart(indicators) {
+      const canvas = document.getElementById('macroTimeChart');
+      if (!canvas) return;
+
+      const keys = Object.keys(indicators || {});
+      const seriesMaps = {};
+      const yearSet = new Set();
+      keys.forEach(k => {
+        const records = indicators[k]?.records || [];
+        seriesMaps[k] = new Map(records.map(r => [Number(r.year), r.value]));
+        records.forEach(r => { if (r && r.year) yearSet.add(Number(r.year)); });
+      });
+
+      const sortedYears = Array.from(yearSet).sort((a, b) => a - b);
+      if (!sortedYears.length) return;
+
+      const datasets = keys.map((k, i) => {
+        const display = INDICATOR_DISPLAY[k] || { label: indicators[k]?.metadata?.name || k, color: FALLBACK_COLORS[i % FALLBACK_COLORS.length] };
+        return {
+          label: display.label,
+          data: sortedYears.map(y => seriesMaps[k].has(y) ? seriesMaps[k].get(y) : null),
+          borderColor: display.color,
+          backgroundColor: display.color + '14',
+          borderWidth: 2.4,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: display.color,
+          tension: 0.2,
+          spanGaps: true
+        };
+      });
+
+      // Rebuild the interactive legend to match the actual series
+      const legend = document.getElementById('chartCustomLegend');
+      if (legend) {
+        legend.innerHTML = '';
+        datasets.forEach((ds, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'legend-btn';
+          btn.onclick = () => toggleChartDataset(i);
+          btn.innerHTML = `<span class="legend-dot" style="background:${ds.borderColor};"></span> ${ds.label}`;
+          legend.appendChild(btn);
+        });
+      }
+
+      if (AppState.chartInstance) {
+        AppState.chartInstance.destroy();
+      }
+
+      AppState.chartInstance = new Chart(canvas, {
+        type: 'line',
+        data: { labels: sortedYears, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0a192f',
+              borderColor: '#1e3a8a',
+              borderWidth: 1,
+              titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: 'bold' },
+              bodyFont: { family: 'JetBrains Mono', size: 12 },
+              padding: 12,
+              cornerRadius: 6,
+              callbacks: {
+                label: function(context) {
+                  const val = context.parsed.y;
+                  return `  ${context.dataset.label}: ${val !== null ? val.toFixed(2) + '%' : 'N/A'}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(148, 163, 184, 0.15)', drawBorder: false },
+              ticks: { font: { family: 'JetBrains Mono', size: 11 }, color: '#475569' }
+            },
+            y: {
+              grid: {
+                color: (ctx) => (ctx.tick.value === 0 ? 'rgba(100, 116, 139, 0.5)' : 'rgba(148, 163, 184, 0.15)'),
+                lineWidth: (ctx) => (ctx.tick.value === 0 ? 1.5 : 1),
+                drawBorder: false
+              },
+              ticks: {
+                font: { family: 'JetBrains Mono', size: 11 },
+                color: '#475569',
+                callback: (val) => `${val}%`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * Toggle Individual Chart Dataset Series
+     */
+    function toggleChartDataset(index) {
+      if (!AppState.chartInstance) return;
+      const isVisible = AppState.chartInstance.isDatasetVisible(index);
+      AppState.chartInstance.setDatasetVisibility(index, !isVisible);
+      AppState.chartInstance.update();
+
+      const legendButtons = document.querySelectorAll('.legend-btn');
+      if (legendButtons[index]) {
+        legendButtons[index].classList.toggle('legend-disabled', isVisible);
+      }
+    }
+
+    /**
+     * Country Comparison: fetch two countries and render overlay chart + table
+     */
+    async function triggerCompareFetch() {
+      const compareSelect = document.getElementById('compareSelect');
+      const panel = document.getElementById('comparisonPanel');
+      if (!compareSelect || !panel) return;
+
+      const other = compareSelect.value;
+      if (!other) {
+        panel.style.display = 'none';
+        AppState.compareData = null;
+        return;
+      }
+      const base = document.getElementById('countrySelect').value;
+      if (other === base) {
+        showToast('Pick a country different from the main one');
+        compareSelect.value = '';
+        panel.style.display = 'none';
+        return;
+      }
+      const range = document.getElementById('rangeSelect').value;
+
+      panel.style.display = 'block';
+      document.getElementById('compareSubtitle').innerText = 'Fetching World Bank observations for both economies...';
+
+      try {
+        const res = await fetch(`/api?action=compare&countries=${base},${other}&range=${range}`).then(r => r.json());
+        if (!res.comparison) throw new Error(res.error || 'comparison failed');
+        AppState.compareData = res;
+
+        // Populate the indicator picker once
+        const indSelect = document.getElementById('compareIndicatorSelect');
+        const keys = Object.keys(res.comparison[base] || {});
+        indSelect.innerHTML = '';
+        keys.forEach(k => {
+          const name = res.comparison[base][k]?.metadata?.name || k;
+          const opt = document.createElement('option');
+          opt.value = k;
+          opt.innerText = name;
+          indSelect.appendChild(opt);
+        });
+
+        renderComparison();
+        showToast(`Comparison loaded: ${base} vs ${other}`);
+      } catch (err) {
+        console.error('Comparison fetch failed:', err);
+        document.getElementById('compareSubtitle').innerText = 'Comparison data could not be retrieved. Try again in a moment.';
+      }
+    }
+
+    function renderComparison() {
+      const res = AppState.compareData;
+      if (!res) return;
+      const [codeA, codeB] = res.countries;
+      const nameA = res.country_names?.[codeA] || codeA;
+      const nameB = res.country_names?.[codeB] || codeB;
+      const key = document.getElementById('compareIndicatorSelect').value;
+      const itemA = res.comparison[codeA]?.[key] || {};
+      const itemB = res.comparison[codeB]?.[key] || {};
+      const meta = itemA.metadata || itemB.metadata || {};
+
+      document.getElementById('compareSubtitle').innerText =
+        `${meta.name || key} (${meta.unit || '%'}) - annual observations only, gaps mean no recorded value.`;
+
+      // Overlay chart on the union of observed years
+      const recA = itemA.records || [];
+      const recB = itemB.records || [];
+      const yearSet = new Set();
+      recA.concat(recB).forEach(r => { if (r && r.year) yearSet.add(Number(r.year)); });
+      const years = Array.from(yearSet).sort((a, b) => a - b);
+      const mapA = new Map(recA.map(r => [Number(r.year), r.value]));
+      const mapB = new Map(recB.map(r => [Number(r.year), r.value]));
+
+      if (AppState.compareChart) AppState.compareChart.destroy();
+      AppState.compareChart = new Chart(document.getElementById('compareChart'), {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: nameA,
+              data: years.map(y => mapA.has(y) ? mapA.get(y) : null),
+              borderColor: '#be123c', backgroundColor: 'rgba(190,18,60,0.08)',
+              borderWidth: 2.6, pointRadius: 4, tension: 0.2, spanGaps: false
+            },
+            {
+              label: nameB,
+              data: years.map(y => mapB.has(y) ? mapB.get(y) : null),
+              borderColor: '#1d4ed8', backgroundColor: 'rgba(29,78,216,0.08)',
+              borderWidth: 2.6, pointRadius: 4, borderDash: [6, 4], tension: 0.2, spanGaps: false
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `  ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(2) + '%' : 'no record'}`
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { font: { family: 'JetBrains Mono', size: 11 } } },
+            y: { ticks: { callback: (v) => `${v}%`, font: { family: 'JetBrains Mono', size: 11 } } }
+          }
+        }
+      });
+
+      // Latest-values table for every indicator
+      const table = document.getElementById('compareTable');
+      const keys = Object.keys(res.comparison[codeA] || {});
+      let html = `<thead><tr>
+        <th style="text-align:left; padding:8px; border-bottom:2px solid var(--border-medium);">Indicator</th>
+        <th style="text-align:right; padding:8px; border-bottom:2px solid var(--border-medium);">${escapeHtml(nameA)}</th>
+        <th style="text-align:right; padding:8px; border-bottom:2px solid var(--border-medium);">${escapeHtml(nameB)}</th>
+      </tr></thead><tbody>`;
+      keys.forEach(k => {
+        const m = res.comparison[codeA][k]?.metadata || {};
+        const sA = res.comparison[codeA][k]?.summary || {};
+        const sB = res.comparison[codeB][k]?.summary || {};
+        const cellA = sA.has_data ? `${Number(sA.latest_value).toFixed(2)}% <span style="color:var(--text-muted);">(${sA.latest_year})</span>` : '<span style="color:var(--text-muted);">no record</span>';
+        const cellB = sB.has_data ? `${Number(sB.latest_value).toFixed(2)}% <span style="color:var(--text-muted);">(${sB.latest_year})</span>` : '<span style="color:var(--text-muted);">no record</span>';
+        html += `<tr>
+          <td style="padding:8px; border-bottom:1px solid var(--border-subtle, #e2e8f0);">${escapeHtml(m.name || k)} <span style="color:var(--text-muted); font-size:var(--text-size-6);">${escapeHtml(m.unit || '')}</span></td>
+          <td style="padding:8px; border-bottom:1px solid var(--border-subtle, #e2e8f0); text-align:right;" class="num-tabular">${cellA}</td>
+          <td style="padding:8px; border-bottom:1px solid var(--border-subtle, #e2e8f0); text-align:right;" class="num-tabular">${cellB}</td>
+        </tr>`;
+      });
+      table.innerHTML = html + '</tbody>';
+    }
+
+    /**
+     * Analytics Suite: News Pulse, Shock Radar, Outlook Engine, LinkLens
+     */
+    async function triggerAnalyticsFetch() {
+      const country = document.getElementById('countrySelect').value;
+      const range = document.getElementById('rangeSelect').value;
+      const cacheKey = `analytics_${country}_${range}`;
+      const now = Date.now();
+      if (AppState.analyticsCache.has(cacheKey)) {
+        const cached = AppState.analyticsCache.get(cacheKey);
+        if (now - cached.timestamp < AppState.staleTimeMs) {
+          renderAnalytics(cached.data);
+          return;
+        }
+      }
+      try {
+        const data = await fetch(`/api?action=analytics&country=${country}&range=${range}`).then(r => r.json());
+        AppState.analyticsCache.set(cacheKey, { timestamp: now, data });
+        renderAnalytics(data);
+      } catch (err) {
+        console.error('Analytics fetch failed:', err);
+      }
+    }
+
+    function renderAnalytics(data) {
+      if (!data) return;
+
+      // News Pulse
+      const pulseEl = document.getElementById('newsPulseBody');
+      if (pulseEl && data.news_pulse && data.news_pulse.overall) {
+        const overall = data.news_pulse.overall;
+        const rows = (data.news_pulse.by_topic || []).map(t =>
+          `<div style="display:flex; justify-content:space-between; padding:3px 0;">
+             <span>${escapeHtml(t.category)}</span>
+             <strong class="num-tabular">${escapeHtml(t.mood_label)} (${Number(t.avg_score).toFixed(2)})</strong>
+           </div>`).join('');
+        pulseEl.innerHTML = `
+          <div style="display:flex; justify-content:space-between; padding-bottom:6px; border-bottom:1px solid var(--border-subtle, #e2e8f0); margin-bottom:6px;">
+            <span>Overall mood (${overall.article_count} articles)</span>
+            <strong class="num-tabular">${escapeHtml(overall.mood_label)} (${Number(overall.avg_score).toFixed(2)})</strong>
+          </div>${rows}`;
+      } else if (pulseEl) {
+        pulseEl.innerText = 'No news articles available for tone scoring.';
+      }
+
+      // Shock Radar
+      const radarEl = document.getElementById('shockRadarBody');
+      if (radarEl && data.shock_radar) {
+        const flags = [];
+        Object.values(data.shock_radar).forEach(det => {
+          (det.flags || []).forEach(f => flags.push({ ...f, indicator: det.indicator_name }));
+        });
+        if (flags.length) {
+          radarEl.innerHTML = flags.map(f =>
+            `<div style="padding:4px 0;">
+               <strong style="color:#c0392b;">${f.direction === 'spike' ? 'Spike' : 'Drop'} ${f.year}</strong> -
+               ${escapeHtml(f.indicator || '')} recorded ${Number(f.value).toFixed(2)}
+               (${Number(f.change).toFixed(2)} pts vs prior year)
+             </div>`).join('');
+        } else {
+          radarEl.innerText = 'No unusually sharp movements detected in the selected range.';
+        }
+      }
+
+      // Outlook Engine
+      const outEl = document.getElementById('outlookBody');
+      if (outEl && data.outlook) {
+        const rows = [];
+        Object.values(data.outlook).forEach(fc => {
+          if (fc.has_forecast && fc.forecast && fc.forecast.length) {
+            const last = fc.forecast[fc.forecast.length - 1];
+            rows.push(`<div style="display:flex; justify-content:space-between; padding:3px 0;">
+              <span>${escapeHtml(fc.indicator_name || '')}</span>
+              <strong class="num-tabular">${Number(last.predicted).toFixed(2)}% by ${last.year}</strong>
+            </div>`);
+          }
+        });
+        outEl.innerHTML = rows.length
+          ? rows.join('') + '<div style="margin-top:6px; font-size:var(--text-size-6); color:var(--text-muted);">Straight-line trend extension only - not a prediction or advice.</div>'
+          : 'Not enough recorded history to extend a trend.';
+      }
+
+      // LinkLens
+      const lensEl = document.getElementById('linklensBody');
+      if (lensEl && data.linklens) {
+        const rows = [];
+        Object.values(data.linklens).forEach(lens => {
+          if (lens.has_result) {
+            const r = lens.r_sentiment;
+            rows.push(`<div style="display:flex; justify-content:space-between; padding:3px 0;">
+              <span>${escapeHtml(lens.indicator_name || '')}</span>
+              <strong class="num-tabular">r = ${r !== null && r !== undefined ? Number(r).toFixed(2) : 'n/a'} (${lens.n_overlap} yrs)</strong>
+            </div>`);
+          }
+        });
+        lensEl.innerHTML = rows.length
+          ? rows.join('') + '<div style="margin-top:6px; font-size:var(--text-size-6); color:var(--text-muted);">Correlation does not imply causation.</div>'
+          : 'News covers too few calendar years to compare with annual indicators yet - LinkLens needs at least 8 overlapping years.';
+      }
+    }
+
+    /**
+     * Render Deterministic NLP Economic Interpretations
+     */
+    function renderInterpretations(interps) {
+      const container = document.getElementById('interpretationGrid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const items = [
+        { key: 'inflation', title: 'Inflation Analysis', color: '#be123c', code: 'FP.CPI.TOTL.ZG' },
+        { key: 'unemployment', title: 'Labor Market Analysis', color: '#b45309', code: 'SL.UEM.TOTL.ZS' },
+        { key: 'gdp_growth', title: 'GDP Output Analysis', color: '#047857', code: 'NY.GDP.MKTP.KD.ZG' },
+        { key: 'gdp_per_capita_growth', title: 'GDP per Capita Analysis', color: '#0d9488', code: 'NY.GDP.PCAP.KD.ZG' },
+        { key: 'exports_gdp', title: 'Exports Share Analysis', color: '#1d4ed8', code: 'NE.EXP.GNFS.ZS' },
+        { key: 'fdi_inflows_gdp', title: 'FDI Inflows Analysis', color: '#7c3aed', code: 'BX.KLT.DINV.WD.GD.ZS' }
+      ];
+
+      items.forEach(item => {
+        const data = interps[item.key] || {};
+        const relNews = data.relevant_news || [];
+        const card = document.createElement('article');
+        card.className = 'nlp-briefing-card';
+        card.innerHTML = `
+          <div>
+            <div class="nlp-card-header">
+              <span class="nlp-category-dot" style="background:${item.color};"></span>
+              <span style="font-size:var(--text-size-4); font-weight:700; color:var(--text-primary);">${data.indicator_name || item.title}</span>
+            </div>
+
+            <div class="nlp-block-section">
+              <div class="nlp-block-tag">1. Empirical Trend Observation</div>
+              <div class="nlp-trend-banner">
+                ${data.observed_trend || 'No empirical observations available for baseline calculation.'}
+              </div>
+            </div>
+
+            <div class="nlp-block-section">
+              <div class="nlp-block-tag">2. Economic Transmission Mechanism</div>
+              <p class="nlp-mechanism-p">
+                ${data.possible_explanation || 'No historical transmission mechanism documented.'}
+              </p>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border-subtle); padding-top:var(--space-3); margin-top:var(--space-3); display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:var(--font-mono); font-size:var(--text-size-6); color:var(--accent-cta); background:#eff6ff; padding:2px 8px; border-radius:var(--radius-sm); border:1px solid #bfdbfe; font-weight:600;">
+              ${relNews.length} Correlated News Signals
+            </span>
+            <span style="font-family:var(--font-mono); font-size:var(--text-size-6); color:var(--text-muted);">${item.code}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /**
+     * Filter News by Category Chip
+     */
+    function filterNewsTopic(topic) {
+      AppState.activeTopic = topic;
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.classList.toggle('chip-active', chip.getAttribute('data-topic') === topic);
+      });
+      applyNewsFilter();
+    }
+
+    /**
+     * 500ms Debounce on Search Input to Prevent High CPU / Reflow Shifts
+     */
+    function onSearchInputDebounced(query) {
+      clearTimeout(AppState.searchDebounceTimer);
+      AppState.searchDebounceTimer = setTimeout(() => {
+        AppState.searchQuery = (query || '').toLowerCase().trim();
+        applyNewsFilter();
+      }, 500); // 500ms debounce
+    }
+
+    /**
+     * Apply Active Topic Filter & Search Query
+     */
+    function applyNewsFilter() {
+      let filtered = AppState.rawArticles;
+
+      if (AppState.activeTopic !== 'all') {
+        filtered = filtered.filter(a => {
+          const cat = (a.category || '').toLowerCase();
+          const target = AppState.activeTopic.toLowerCase();
+          return cat.includes(target) || target.includes(cat);
+        });
+      }
+
+      if (AppState.searchQuery) {
+        filtered = filtered.filter(a => {
+          const t = (a.title || '').toLowerCase();
+          const d = (a.description || '').toLowerCase();
+          const k = (a.matched_keywords || '').toLowerCase();
+          const kt = (a.key_terms || '').toLowerCase();
+          return t.includes(AppState.searchQuery) || d.includes(AppState.searchQuery) || k.includes(AppState.searchQuery) || kt.includes(AppState.searchQuery);
+        });
+      }
+
+      renderNewsGrid(filtered);
+    }
+
+    /**
+     * Render Filtered News Stories Grid
+     */
+    function renderNewsGrid(articles) {
+      const container = document.getElementById('newsGrid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!articles || !articles.length) {
+        container.innerHTML = `
+          <div style="grid-column:1/-1; text-align:center; padding:var(--space-8); background:var(--canvas-card); border:1px dashed var(--border-medium); border-radius:var(--radius-md); color:var(--text-muted);">
+            <p>No economic news headlines matched the active filters.</p>
+            <button class="btn btn-sm btn-ghost" style="margin-top:var(--space-3);" onclick="filterNewsTopic('all'); document.getElementById('newsSearchInput').value=''; onSearchInputDebounced('');">
+              Reset All Filters
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      articles.slice(0, 9).forEach(art => {
+        const card = document.createElement('article');
+        card.className = 'news-story-card';
+
+        let pillClass = 'pill-cat-general';
+        const cat = (art.category || '').toLowerCase();
+        if (cat.includes('inflation')) pillClass = 'pill-cat-inflation';
+        else if (cat.includes('employment') || cat.includes('job')) pillClass = 'pill-cat-employment';
+        else if (cat.includes('gdp') || cat.includes('growth')) pillClass = 'pill-cat-gdp';
+        else if (cat.includes('monetary') || cat.includes('rate')) pillClass = 'pill-cat-monetary';
+
+        card.innerHTML = `
+          <div>
+            <div class="story-meta-top">
+              <span class="category-semantic-pill ${pillClass}">${escapeHtml(art.category || 'General Macro')}</span>
+              <span style="font-family:var(--font-mono); font-size:var(--text-size-6); color:var(--text-muted);">${escapeHtml(art.source || 'News')} &bull; ${escapeHtml(art.published_at || 'Recent')}</span>
+            </div>
+            <a href="${escapeHtml(art.url || '#')}" target="_blank" rel="noopener noreferrer" class="story-headline-link">
+              ${escapeHtml(art.title)}
+            </a>
+            <p class="story-snippet">${escapeHtml(art.description || 'No summary text available.')}</p>
+          </div>
+          <div class="story-card-footer" style="flex-direction:column; align-items:flex-start; gap:2px;">
+            <span>Keywords: <strong style="color:var(--text-secondary);">${escapeHtml(art.matched_keywords || 'macro')}</strong></span>
+            ${art.key_terms && art.key_terms !== 'None' ? `<span style="font-size:var(--text-size-6); color:var(--text-muted);">Key terms (TF-IDF): ${escapeHtml(art.key_terms)}</span>` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Initialize application on DOM content loaded
+    window.addEventListener('DOMContentLoaded', () => {
+      triggerDataFetch();
+    });
+  </script>
+</body>
+</html>
