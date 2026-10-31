@@ -1571,6 +1571,48 @@
       }
     }
 
+
+    /* ==========================================================================
+       SECTION 8: MOTION & MICRO-INTERACTIONS (Subtle Editorial Animations)
+       Pure CSS + vanilla JS, no libraries. Honors prefers-reduced-motion.
+       ========================================================================== */
+    /* 1. Scroll Reveal: sections gently fade up as they enter the viewport.
+          The hidden state is only applied by JS, so the page stays fully
+          readable when JavaScript is disabled. */
+    .reveal-on-scroll {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-on-scroll.reveal-visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* 4. Hover Micro-Interactions: chart panels get the same subtle lift
+          and shadow the smaller cards already had */
+    .chart-panel-card {
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+    }
+    .chart-panel-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* Respect reduced-motion preferences: no reveal, lift, or loop motion */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal-on-scroll {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+      .chart-panel-card:hover,
+      .indicator-card:hover,
+      .nlp-briefing-card:hover,
+      .news-story-card:hover {
+        transform: none;
+      }
+    }
 </style>
 </head>
 <body>
@@ -2451,6 +2493,86 @@
      */
     const formatPercent = (val) => (val !== null && val !== undefined) ? `${Number(val).toFixed(2)}%` : 'N/A';
 
+    /**
+     * Motion Preferences & Animation Helpers
+     */
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const isReducedMotion = () => motionQuery.matches;
+
+    // 3. Chart Draw-In: gentle draw animation on first render of each chart
+    const chartDrawAnimation = () => isReducedMotion() ? false : { duration: 1000, easing: 'easeOutQuart' };
+
+    /**
+     * 2. Number Count-Up: animate an indicator card value from 0 to its real
+     * loaded value. Only ever called with figures returned by the World Bank
+     * API - never with placeholder or mock numbers.
+     */
+    function countUpValue(el, value) {
+      if (!el) return;
+      if (value === null || value === undefined || isNaN(Number(value))) {
+        el.innerText = 'N/A';
+        return;
+      }
+      const target = Number(value);
+      if (isReducedMotion()) {
+        el.innerText = `${target.toFixed(2)}%`;
+        return;
+      }
+      const duration = 900;
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        el.innerText = `${(target * eased).toFixed(2)}%`;
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    /**
+     * 1. Scroll Reveal: tag top-level sections and reveal each on first view
+     * via IntersectionObserver. Skipped entirely for reduced-motion users.
+     */
+    function initScrollReveal() {
+      if (isReducedMotion() || !('IntersectionObserver' in window)) return;
+      const sections = document.querySelectorAll('main section');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0, rootMargin: '0px 0px -12% 0px' });
+      sections.forEach((s) => {
+        s.classList.add('reveal-on-scroll');
+        observer.observe(s);
+      });
+    }
+
+    /**
+     * 3. Chart Draw-In (continued): if the main chart rendered while it was
+     * still off-screen, replay its entrance animation the first time the
+     * canvas scrolls into view. Chart.js reset() + update() replays the
+     * built-in draw animation. One-shot: disconnects after first view.
+     */
+    function armChartDrawIn(canvasId, getChart) {
+      const el = document.getElementById(canvasId);
+      if (!el || isReducedMotion() || !('IntersectionObserver' in window)) return;
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const chart = getChart();
+          if (chart) {
+            chart.reset();
+            chart.update();
+          }
+          obs.disconnect();
+        });
+      }, { threshold: 0.2 });
+      obs.observe(el);
+    }
+
     const formatDeltaPill = (change, prevYear) => {
       if (change === null || change === undefined) {
         return { text: 'Baseline period', className: 'delta-pill-neutral' };
@@ -2552,7 +2674,7 @@
     function renderIndicators(indicators) {
       // 1. Inflation
       const inf = indicators.inflation?.summary || {};
-      document.getElementById('val-inflation').innerText = formatPercent(inf.latest_value);
+      countUpValue(document.getElementById('val-inflation'), inf.latest_value);
       const infDelta = formatDeltaPill(inf.change, inf.previous_year);
       const infDeltaEl = document.getElementById('delta-inflation');
       infDeltaEl.innerText = infDelta.text;
@@ -2561,7 +2683,7 @@
 
       // 2. Unemployment
       const uem = indicators.unemployment?.summary || {};
-      document.getElementById('val-unemployment').innerText = formatPercent(uem.latest_value);
+      countUpValue(document.getElementById('val-unemployment'), uem.latest_value);
       const uemDelta = formatDeltaPill(uem.change, uem.previous_year);
       const uemDeltaEl = document.getElementById('delta-unemployment');
       uemDeltaEl.innerText = uemDelta.text;
@@ -2570,7 +2692,7 @@
 
       // 3. GDP Growth
       const gdp = indicators.gdp_growth?.summary || {};
-      document.getElementById('val-gdp').innerText = formatPercent(gdp.latest_value);
+      countUpValue(document.getElementById('val-gdp'), gdp.latest_value);
       const gdpDelta = formatDeltaPill(gdp.change, gdp.previous_year);
       const gdpDeltaEl = document.getElementById('delta-gdp');
       gdpDeltaEl.innerText = gdpDelta.text;
@@ -2609,6 +2731,7 @@
           `;
           card.style.borderTop = `3px solid ${display.color}`;
           grid.appendChild(card);
+          countUpValue(card.querySelector('.indicator-value'), summary.latest_value);
         });
       }
     }
@@ -2671,6 +2794,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: chartDrawAnimation(),
           interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { display: false },
@@ -2823,6 +2947,7 @@
         },
         options: {
           responsive: true, maintainAspectRatio: false,
+          animation: chartDrawAnimation(),
           interaction: { mode: 'index', intersect: false },
           plugins: {
             tooltip: {
@@ -3129,6 +3254,8 @@
 
     // Initialize application on DOM content loaded
     window.addEventListener('DOMContentLoaded', () => {
+      initScrollReveal();
+      armChartDrawIn('macroTimeChart', () => AppState.chartInstance);
       triggerDataFetch();
     });
   </script>
