@@ -1270,70 +1270,6 @@
     }
 
     /* ==========================================================================
-       SECTION 6: SOCIAL PROOF & TESTIMONIALS
-       ========================================================================== */
-    .testimonials-section {
-      padding: var(--space-8) 0;
-      border-top: 1px solid var(--border-medium);
-    }
-
-    .testimonials-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-6);
-    }
-
-    .testimonial-item {
-      padding: var(--space-5);
-      background: var(--canvas-card);
-      border: 1px solid var(--border-medium);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-soft);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .testimonial-quote {
-      font-size: var(--text-size-4);
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: var(--space-5);
-      font-style: italic;
-    }
-
-    .testimonial-author {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-    }
-
-    .author-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: var(--accent-cta);
-    }
-
-    .author-name {
-      font-size: var(--text-size-5);
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .author-role {
-      font-size: var(--text-size-6);
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-    }
-
-    /* ==========================================================================
        SECTION 7: DUAL DEPLOYMENT SPECIFICATION (Collapsible Architecture)
        ========================================================================== */
     .arch-details-drawer {
@@ -1526,8 +1462,7 @@
     @media (max-width: 1024px) {
       .indicators-triad-grid,
       .interpretation-card-grid,
-      .news-cards-grid,
-      .testimonials-grid {
+      .news-cards-grid {
         grid-template-columns: repeat(2, 1fr);
       }
       .feature-panel-display {
@@ -1576,7 +1511,6 @@
       .indicators-triad-grid,
       .interpretation-card-grid,
       .news-cards-grid,
-      .testimonials-grid,
       .feature-nav-tabs {
         grid-template-columns: 1fr;
       }
@@ -1612,7 +1546,6 @@
       .hero-section,
       .social-proof-bar,
       .features-section,
-      .testimonials-section,
       .site-footer,
       .toast-chip,
       .peeking-scroll-prompt,
@@ -2264,62 +2197,6 @@
           </div>
         </div>
 
-      </div>
-    </section>
-
-    <!-- ==========================================================================
-       SECTION 6: SOCIAL PROOF & TESTIMONIALS
-       ========================================================================== -->
-    <section class="testimonials-section" aria-labelledby="testimonials-heading">
-      <div class="container">
-        <div class="section-heading-block">
-          <span class="section-eyebrow">Academic Validation</span>
-          <h2 id="testimonials-heading" class="section-title">Endorsed for Scientific Transparency</h2>
-          <p class="section-description">
-            How economics educators, data science researchers, and graduate students use The Economic Interpreter for explainable macro analysis.
-          </p>
-        </div>
-
-        <div class="testimonials-grid">
-          <div class="testimonial-item">
-            <p class="testimonial-quote">
-              &ldquo;In an academic environment, AI tools that fabricate citations or claim causal connections are disastrous. The Economic Interpreter is refreshing because every percentage change traces to official World Bank records.&rdquo;
-            </p>
-            <div class="testimonial-author">
-              <div class="author-avatar">DR</div>
-              <div>
-                <div class="author-name">Dr. R. Sengupta</div>
-                <div class="author-role">Visiting Professor of Econometrics</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="testimonial-item">
-            <p class="testimonial-quote">
-              &ldquo;The deterministic rule-based NLP is exactly what undergraduate students need to study. It demonstrates how transparent keyword lexicons can classify financial articles without high-cost cloud LLM dependencies.&rdquo;
-            </p>
-            <div class="testimonial-author">
-              <div class="author-avatar">KP</div>
-              <div>
-                <div class="author-name">Kavita Patel</div>
-                <div class="author-role">Senior Quantitative Researcher</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="testimonial-item">
-            <p class="testimonial-quote">
-              &ldquo;The dual-deployment design on Vercel and Streamlit provides the perfect reference implementation. The UI is clean, accessible, and completely devoid of generic AI visual clutter.&rdquo;
-            </p>
-            <div class="testimonial-author">
-              <div class="author-avatar">AM</div>
-              <div>
-                <div class="author-name">A. Mukherjee</div>
-                <div class="author-role">BSc Data Science Finalist</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
