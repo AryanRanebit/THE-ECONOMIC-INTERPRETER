@@ -284,7 +284,7 @@ def test_vercel_serverless_handler():
     headers_i, body_i = resp_interp.split("\r\n\r\n", 1)
     data_interp = json.loads(body_i)
     assert "interpretations" in data_interp
-    assert set(data_interp["interpretations"].keys()) == {"inflation", "unemployment", "gdp_growth"}
+    assert set(data_interp["interpretations"].keys()) == set(INDICATOR_METADATA.keys())
 
 
 # ---------------------------------------------------------------------------

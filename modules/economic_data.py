@@ -44,6 +44,24 @@ INDICATOR_METADATA: Dict[str, Dict[str, str]] = {
         "unit": "% (Annual)",
         "description": "Annual percentage growth rate of GDP at market prices based on constant local currency.",
     },
+    "gdp_per_capita_growth": {
+        "code": "NY.GDP.PCAP.KD.ZG",
+        "name": "GDP per Capita Growth",
+        "unit": "% (Annual)",
+        "description": "Annual percentage growth rate of GDP per person, based on constant local currency. A rough proxy for whether average living standards are rising.",
+    },
+    "exports_gdp": {
+        "code": "NE.EXP.GNFS.ZS",
+        "name": "Exports of Goods & Services",
+        "unit": "% of GDP",
+        "description": "The value of all goods and services sold to the rest of the world, expressed as a share of GDP. Shows how large foreign demand is for the economy.",
+    },
+    "fdi_inflows_gdp": {
+        "code": "BX.KLT.DINV.WD.GD.ZS",
+        "name": "Foreign Direct Investment Inflows",
+        "unit": "% of GDP",
+        "description": "Net inflows of foreign direct investment as a share of GDP. Reflects how much long-term foreign capital is entering the economy.",
+    },
 }
 
 
@@ -202,3 +220,41 @@ def load_all_economic_data(
         }
 
     return results
+
+
+# Countries offered in the dashboard and comparison view.
+# ISO-2 codes; India stays the default per GEMINI.md.
+SUPPORTED_COUNTRIES: Dict[str, str] = {
+    "IN": "India",
+    "US": "United States",
+    "CN": "China",
+    "GB": "United Kingdom",
+    "DE": "Germany",
+    "JP": "Japan",
+    "AE": "United Arab Emirates",
+    "SG": "Singapore",
+}
+
+DEFAULT_COUNTRY = "IN"
+
+
+@cache_data_econ
+def load_comparison_data(
+    country_codes: tuple = ("IN", "US"),
+    date_range: str = "2000:2025",
+) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    """
+    Fetch all indicators for several countries for the side-by-side comparison view.
+
+    Parameters:
+        country_codes: Tuple of ISO-2 country codes (tuple so Streamlit caching can hash it).
+        date_range: Colon-separated year range, e.g. '2000:2025'.
+
+    Returns:
+        Dict mapping each country code to the standard
+        load_all_economic_data result for that country.
+    """
+    comparison: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    for code in country_codes:
+        comparison[code] = load_all_economic_data(country_code=code, date_range=date_range)
+    return comparison

@@ -216,3 +216,11 @@ The Economic Interpreter is built specifically to deploy seamlessly on **Streaml
 - **Author:** Aryan Rane
 - **Academic Context:** Developed as an educational data science application to demystify macroeconomic relationships.
 - **License:** Open Source under the MIT License.
+
+## Feature Set (October 2026)
+
+- **Six World Bank indicators, eight economies:** inflation, unemployment, real GDP growth, GDP per capita growth, exports of goods & services (% of GDP), and FDI net inflows (% of GDP) for India, the US, China, the UK, Germany, Japan, the UAE, and Singapore.
+- **Country comparison:** pick a second country to see the same indicators side-by-side - overlay charts on genuinely observed years only, plus a latest-values table where every value carries its own reporting year. Available in both the Streamlit app and the web frontend (`/api?action=compare&countries=IN,US`).
+- **TF-IDF news tagging:** topic categorization ranks by TF-IDF-weighted keyword matches instead of raw counts, so distinctive terms like "repo rate" outweigh common words like "price". Every article lists its top TF-IDF key terms.
+- **PDF report export:** one click in the Streamlit app (fpdf2, deterministic text) or the "PDF Report" print button on the web frontend.
+- **Deterministic analytics suite:** News Pulse (VADER tone), LinkLens (news-vs-indicator correlation over overlapping years only), Shock Radar (z-score anomaly flags) and Outlook Engine (illustrative linear trend extension) run in the Streamlit app and on the web frontend (`/api?action=analytics`).

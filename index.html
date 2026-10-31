@@ -1538,9 +1538,39 @@
       }
     }
 
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+
     @media (max-width: 768px) {
+      .nav-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
       .nav-links {
         display: none;
+      }
+      .nav-links.nav-open {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-medium);
+        padding: var(--space-4) var(--space-5);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+        z-index: 60;
       }
       .mockup-grid-preview,
       .indicators-triad-grid,
@@ -1575,7 +1605,40 @@
         grid-template-columns: 1fr;
       }
     }
-  </style>
+  
+    /* Print view: the "PDF Report" button prints the data sections only */
+    @media print {
+      .site-header,
+      .hero-section,
+      .social-proof-bar,
+      .features-section,
+      .testimonials-section,
+      .site-footer,
+      .toast-chip,
+      .peeking-scroll-prompt,
+      .controls-strip,
+      .chart-legend-interactive,
+      #pdfBtn,
+      #fetchBtn {
+        display: none !important;
+      }
+      .indicators-triad-grid,
+      .interpretation-card-grid,
+      .news-cards-grid {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      .chart-canvas-box {
+        max-height: 320px;
+      }
+      body {
+        background: #ffffff !important;
+      }
+      .sandbox-section {
+        padding-top: 0 !important;
+      }
+    }
+
+</style>
 </head>
 <body>
 
@@ -1600,7 +1663,16 @@
         </div>
       </a>
 
-      <nav class="nav-links" aria-label="Main Navigation">
+      <button class="nav-toggle" id="navToggle" aria-label="Open navigation menu" aria-expanded="false" onclick="toggleMobileNav()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+        Menu
+      </button>
+
+      <nav class="nav-links" id="mainNavLinks" aria-label="Main Navigation">
         <a href="#features" class="nav-link">Architecture</a>
         <a href="#sandbox" class="nav-link">Live Sandbox</a>
         <a href="#interpretations" class="nav-link">NLP Synthesis</a>
@@ -1665,43 +1737,6 @@
             </svg>
             Epistemic Boundaries
           </a>
-        </div>
-
-        <!-- High-Resolution Contextual Mockup Frame -->
-        <div class="hero-mockup-wrapper" aria-hidden="true">
-          <div class="mockup-window">
-            <div class="mockup-topbar">
-              <div class="mockup-dots">
-                <span class="mockup-dot red"></span>
-                <span class="mockup-dot yellow"></span>
-                <span class="mockup-dot green"></span>
-              </div>
-              <div class="mockup-address">economic-interpreter.org/sandbox/india-2025</div>
-              <div style="width: 40px;"></div>
-            </div>
-            <div class="mockup-body">
-              <div class="mockup-grid-preview">
-                <div class="mockup-stat-pill">
-                  <span class="mockup-stat-label">Inflation Rate (CPI %)</span>
-                  <span class="mockup-stat-value num-tabular">5.40%</span>
-                  <span class="mockup-stat-trend" style="color:#be123c;">-1.30 pp vs prior</span>
-                </div>
-                <div class="mockup-stat-pill">
-                  <span class="mockup-stat-label">Unemployment Rate (%)</span>
-                  <span class="mockup-stat-value num-tabular">4.17%</span>
-                  <span class="mockup-stat-trend" style="color:#b45309;">+0.04 pp vs prior</span>
-                </div>
-                <div class="mockup-stat-pill">
-                  <span class="mockup-stat-label">Real GDP Growth (%)</span>
-                  <span class="mockup-stat-value num-tabular">8.15%</span>
-                  <span class="mockup-stat-trend" style="color:#047857;">+1.11 pp vs prior</span>
-                </div>
-              </div>
-              <div style="height: 120px; background: #ffffff; border-radius: var(--radius-sm); border: 1px solid var(--border-medium); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-family:var(--font-mono); font-size:var(--text-size-6); font-weight:600;">
-                [Synchronized World Bank Multi-Series Time Horizon Active]
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Subtle 16px peeking prompt -->
@@ -1815,7 +1850,7 @@
               <div style="color:#38bdf8;">{</div>
               <div style="padding-left:14px; color:#cbd5e1;">"country": "India",</div>
               <div style="padding-left:14px; color:#cbd5e1;">"indicator": "Inflation, consumer prices (%)",</div>
-              <div style="padding-left:14px; color:#cbd5e1;">"latest_obs": <span style="color:#34d399;">5.4021</span>,</div>
+              <div style="padding-left:14px; color:#cbd5e1;">"latest_obs": <span style="color:#34d399;">&lt;annual_value&gt;</span>,</div>
               <div style="padding-left:14px; color:#cbd5e1;">"status": "audited_world_bank_record"</div>
               <div style="color:#38bdf8;">}</div>
             </div>
@@ -1913,9 +1948,27 @@
               <select id="countrySelect" class="control-select" onchange="triggerDataFetch()">
                 <option value="IN" selected>India (IN) — Primary Target</option>
                 <option value="US">United States (US)</option>
+                <option value="CN">China (CN)</option>
                 <option value="GB">United Kingdom (GB)</option>
                 <option value="DE">Germany (DE)</option>
                 <option value="JP">Japan (JP)</option>
+                <option value="AE">United Arab Emirates (AE)</option>
+                <option value="SG">Singapore (SG)</option>
+              </select>
+            </div>
+
+            <div class="control-item">
+              <label for="compareSelect" class="control-label">Compare With:</label>
+              <select id="compareSelect" class="control-select" onchange="triggerCompareFetch()">
+                <option value="" selected>— No comparison —</option>
+                <option value="IN">India (IN)</option>
+                <option value="US">United States (US)</option>
+                <option value="CN">China (CN)</option>
+                <option value="GB">United Kingdom (GB)</option>
+                <option value="DE">Germany (DE)</option>
+                <option value="JP">Japan (JP)</option>
+                <option value="AE">United Arab Emirates (AE)</option>
+                <option value="SG">Singapore (SG)</option>
               </select>
             </div>
 
@@ -1934,6 +1987,14 @@
               <span class="live-pulse" style="width:5px; height:5px;"></span>
               <span id="cacheStatusText">Client Cache: Fresh</span>
             </div>
+            <button id="pdfBtn" class="btn btn-sm btn-ghost" onclick="window.print()" title="Opens the print dialog - choose 'Save as PDF' to download a report of this analysis">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>PDF Report</span>
+            </button>
             <button id="fetchBtn" class="btn btn-sm btn-primary" onclick="triggerDataFetch(true)">
               <svg id="fetchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
@@ -2058,6 +2119,91 @@
         </div>
 
         <!-- Evidence-Based Deterministic NLP Interpretation Section -->
+        <!-- Country Comparison Panel (hidden until a comparison country is chosen) -->
+        <div id="comparisonPanel" class="chart-panel-card" style="display:none; margin-bottom:var(--space-8);">
+          <div class="chart-panel-header">
+            <div>
+              <h3 style="font-size:var(--text-size-2); margin:0;">Country Comparison</h3>
+              <p id="compareSubtitle" style="margin:4px 0 0; color:var(--text-secondary); font-size:var(--text-size-5);">
+                Same indicators, two economies, only genuinely recorded World Bank observations.
+              </p>
+            </div>
+            <div class="control-item" style="min-width:220px;">
+              <label for="compareIndicatorSelect" class="control-label">Indicator:</label>
+              <select id="compareIndicatorSelect" class="control-select" onchange="renderComparison()"></select>
+            </div>
+          </div>
+          <div class="chart-canvas-box">
+            <canvas id="compareChart"></canvas>
+          </div>
+          <div style="overflow-x:auto; margin-top:var(--space-4);">
+            <table id="compareTable" style="width:100%; border-collapse:collapse; font-size:var(--text-size-5);"></table>
+          </div>
+          <p style="margin-top:var(--space-3); font-size:var(--text-size-6); color:var(--text-muted);">
+            Each value carries its own reporting year - the latest available year can differ between countries. Gaps are years without a recorded observation, never invented numbers.
+          </p>
+        </div>
+
+        <!-- Analytics Suite: News Pulse, Shock Radar, Outlook Engine, LinkLens -->
+        <div id="analytics" style="margin-bottom:var(--space-8);">
+          <div class="section-heading-block" style="margin-bottom:var(--space-5);">
+            <h2 class="section-title" style="font-size:var(--text-size-1);">Deterministic Analytics Suite</h2>
+            <p style="color:var(--text-secondary);">
+              Four transparent, fully offline analyses - no AI, no black boxes. The same methods run in the Streamlit app.
+            </p>
+          </div>
+          <div class="interpretation-card-grid">
+            <article class="nlp-briefing-card" id="cardNewsPulse">
+              <div class="nlp-card-header">
+                <span class="nlp-category-dot" style="background:#9b59b6;"></span>
+                <span style="font-size:var(--text-size-4); font-weight:700; color:var(--text-primary);">News Pulse</span>
+              </div>
+              <p class="nlp-mechanism-p" style="margin-top:var(--space-3);">
+                Reads the tone of every headline with the published VADER lexicon (offline, deterministic).
+              </p>
+              <div id="newsPulseBody" style="margin-top:var(--space-3); font-size:var(--text-size-5); color:var(--text-secondary);">
+                Awaiting analytics query...
+              </div>
+            </article>
+            <article class="nlp-briefing-card" id="cardShockRadar">
+              <div class="nlp-card-header">
+                <span class="nlp-category-dot" style="background:#c0392b;"></span>
+                <span style="font-size:var(--text-size-4); font-weight:700; color:var(--text-primary);">Shock Radar</span>
+              </div>
+              <p class="nlp-mechanism-p" style="margin-top:var(--space-3);">
+                Flags years where an indicator moved unusually sharply versus its own history (z-score rule).
+              </p>
+              <div id="shockRadarBody" style="margin-top:var(--space-3); font-size:var(--text-size-5); color:var(--text-secondary);">
+                Awaiting analytics query...
+              </div>
+            </article>
+            <article class="nlp-briefing-card" id="cardOutlook">
+              <div class="nlp-card-header">
+                <span class="nlp-category-dot" style="background:#2980b9;"></span>
+                <span style="font-size:var(--text-size-4); font-weight:700; color:var(--text-primary);">Outlook Engine</span>
+              </div>
+              <p class="nlp-mechanism-p" style="margin-top:var(--space-3);">
+                Extends each indicator's straight-line trend a few years forward. Illustrative only, never a prediction.
+              </p>
+              <div id="outlookBody" style="margin-top:var(--space-3); font-size:var(--text-size-5); color:var(--text-secondary);">
+                Awaiting analytics query...
+              </div>
+            </article>
+            <article class="nlp-briefing-card" id="cardLinkLens">
+              <div class="nlp-card-header">
+                <span class="nlp-category-dot" style="background:#16a085;"></span>
+                <span style="font-size:var(--text-size-4); font-weight:700; color:var(--text-primary);">LinkLens</span>
+              </div>
+              <p class="nlp-mechanism-p" style="margin-top:var(--space-3);">
+                Checks whether news tone and indicator changes move together over genuinely overlapping years. Correlation is not causation.
+              </p>
+              <div id="linklensBody" style="margin-top:var(--space-3); font-size:var(--text-size-5); color:var(--text-secondary);">
+                Awaiting analytics query...
+              </div>
+            </article>
+          </div>
+        </div>
+
         <div id="interpretations" style="margin-bottom:var(--space-8);">
           <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:var(--space-4);">
             <div>
@@ -2337,8 +2483,49 @@
       searchDebounceTimer: null,
       // 5-minute client-side caching store (prevents redundant network fetches)
       cache: new Map(),
-      staleTimeMs: 5 * 60 * 1000
+      staleTimeMs: 5 * 60 * 1000,
+      compareData: null,
+      compareChart: null,
+      analyticsCache: new Map()
     };
+
+    /**
+     * Display registry for all supported indicators (color per series).
+     */
+    const INDICATOR_DISPLAY = {
+      inflation: { label: 'Inflation Rate (CPI %)', color: '#be123c' },
+      unemployment: { label: 'Unemployment Rate (%)', color: '#b45309' },
+      gdp_growth: { label: 'Real GDP Growth (%)', color: '#047857' },
+      gdp_per_capita_growth: { label: 'GDP per Capita Growth (%)', color: '#0d9488' },
+      exports_gdp: { label: 'Exports of Goods & Services (% of GDP)', color: '#1d4ed8' },
+      fdi_inflows_gdp: { label: 'FDI Net Inflows (% of GDP)', color: '#7c3aed' }
+    };
+    const FALLBACK_COLORS = ['#be123c', '#b45309', '#047857', '#0d9488', '#1d4ed8', '#7c3aed'];
+
+    /**
+     * Mobile Navigation Toggle
+     */
+    function toggleMobileNav() {
+      const nav = document.getElementById('mainNavLinks');
+      const btn = document.getElementById('navToggle');
+      if (!nav) return;
+      const open = nav.classList.toggle('nav-open');
+      if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    document.addEventListener('click', (ev) => {
+      const nav = document.getElementById('mainNavLinks');
+      const btn = document.getElementById('navToggle');
+      if (!nav || !nav.classList.contains('nav-open')) return;
+      if (nav.contains(ev.target) || (btn && btn.contains(ev.target))) {
+        if (ev.target.classList && ev.target.classList.contains('nav-link')) {
+          nav.classList.remove('nav-open');
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+        return;
+      }
+      nav.classList.remove('nav-open');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
 
     /**
      * Toast Micro-Interaction Helper
@@ -2468,6 +2655,10 @@
       if (indicators) {
         renderIndicators(indicators);
         renderChart(indicators);
+        triggerAnalyticsFetch();
+        if (AppState.compareData || (document.getElementById('compareSelect') || {}).value) {
+          triggerCompareFetch();
+        }
       }
       if (interpretations) {
         renderInterpretations(interpretations);
@@ -2508,6 +2699,41 @@
       gdpDeltaEl.innerText = gdpDelta.text;
       gdpDeltaEl.className = `indicator-delta-pill ${gdpDelta.className} num-tabular`;
       document.getElementById('period-gdp').innerText = `Period: ${gdp.latest_year || 'N/A'}`;
+
+      // Additional indicators (GDP per capita, exports, FDI) get generated cards
+      const grid = document.getElementById('indicatorsTriad');
+      if (grid) {
+        grid.querySelectorAll('.indicator-card-extra').forEach(el => el.remove());
+        const extraKeys = Object.keys(indicators).filter(k => !['inflation', 'unemployment', 'gdp_growth'].includes(k));
+        extraKeys.forEach(k => {
+          const item = indicators[k] || {};
+          const meta = item.metadata || {};
+          const summary = item.summary || {};
+          const delta = formatDeltaPill(summary.change, summary.previous_year);
+          const display = INDICATOR_DISPLAY[k] || { color: '#475569' };
+          const card = document.createElement('article');
+          card.className = 'indicator-card indicator-card-extra';
+          card.innerHTML = `
+            <div class="card-meta-head">
+              <span class="indicator-title">${escapeHtml(meta.name || k)}</span>
+              <span class="wb-code-chip">${escapeHtml(meta.code || '')}</span>
+            </div>
+            <div>
+              <div class="indicator-primary-figure">
+                <span class="indicator-value num-tabular">${formatPercent(summary.latest_value)}</span>
+                <span class="indicator-unit">${escapeHtml(meta.unit || '%')}</span>
+              </div>
+              <span class="indicator-delta-pill ${delta.className} num-tabular">${delta.text}</span>
+            </div>
+            <div class="card-footer-meta">
+              <span>Period: ${summary.latest_year || 'N/A'}</span>
+              <span>Source: World Bank</span>
+            </div>
+          `;
+          card.style.borderTop = `3px solid ${display.color}`;
+          grid.appendChild(card);
+        });
+      }
     }
 
     /**
@@ -2517,25 +2743,46 @@
       const canvas = document.getElementById('macroTimeChart');
       if (!canvas) return;
 
-      const infRecords = indicators.inflation?.records || [];
-      const uemRecords = indicators.unemployment?.records || [];
-      const gdpRecords = indicators.gdp_growth?.records || [];
-
+      const keys = Object.keys(indicators || {});
+      const seriesMaps = {};
       const yearSet = new Set();
-      [...infRecords, ...uemRecords, ...gdpRecords].forEach(r => {
-        if (r && r.year) yearSet.add(Number(r.year));
+      keys.forEach(k => {
+        const records = indicators[k]?.records || [];
+        seriesMaps[k] = new Map(records.map(r => [Number(r.year), r.value]));
+        records.forEach(r => { if (r && r.year) yearSet.add(Number(r.year)); });
       });
 
       const sortedYears = Array.from(yearSet).sort((a, b) => a - b);
       if (!sortedYears.length) return;
 
-      const infMap = new Map(infRecords.map(r => [Number(r.year), r.value]));
-      const uemMap = new Map(uemRecords.map(r => [Number(r.year), r.value]));
-      const gdpMap = new Map(gdpRecords.map(r => [Number(r.year), r.value]));
+      const datasets = keys.map((k, i) => {
+        const display = INDICATOR_DISPLAY[k] || { label: indicators[k]?.metadata?.name || k, color: FALLBACK_COLORS[i % FALLBACK_COLORS.length] };
+        return {
+          label: display.label,
+          data: sortedYears.map(y => seriesMaps[k].has(y) ? seriesMaps[k].get(y) : null),
+          borderColor: display.color,
+          backgroundColor: display.color + '14',
+          borderWidth: 2.4,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: display.color,
+          tension: 0.2,
+          spanGaps: true
+        };
+      });
 
-      const infSeries = sortedYears.map(y => infMap.has(y) ? infMap.get(y) : null);
-      const uemSeries = sortedYears.map(y => uemMap.has(y) ? uemMap.get(y) : null);
-      const gdpSeries = sortedYears.map(y => gdpMap.has(y) ? gdpMap.get(y) : null);
+      // Rebuild the interactive legend to match the actual series
+      const legend = document.getElementById('chartCustomLegend');
+      if (legend) {
+        legend.innerHTML = '';
+        datasets.forEach((ds, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'legend-btn';
+          btn.onclick = () => toggleChartDataset(i);
+          btn.innerHTML = `<span class="legend-dot" style="background:${ds.borderColor};"></span> ${ds.label}`;
+          legend.appendChild(btn);
+        });
+      }
 
       if (AppState.chartInstance) {
         AppState.chartInstance.destroy();
@@ -2543,54 +2790,11 @@
 
       AppState.chartInstance = new Chart(canvas, {
         type: 'line',
-        data: {
-          labels: sortedYears,
-          datasets: [
-            {
-              label: 'Inflation Rate (CPI %)',
-              data: infSeries,
-              borderColor: '#be123c',
-              backgroundColor: 'rgba(190, 18, 60, 0.08)',
-              borderWidth: 2.4,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: '#be123c',
-              tension: 0.2,
-              spanGaps: true
-            },
-            {
-              label: 'Unemployment Rate (%)',
-              data: uemSeries,
-              borderColor: '#b45309',
-              backgroundColor: 'rgba(180, 83, 9, 0.08)',
-              borderWidth: 2.4,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: '#b45309',
-              tension: 0.2,
-              spanGaps: true
-            },
-            {
-              label: 'Real GDP Growth (%)',
-              data: gdpSeries,
-              borderColor: '#047857',
-              backgroundColor: 'rgba(4, 120, 87, 0.08)',
-              borderWidth: 2.6,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: '#047857',
-              tension: 0.2,
-              spanGaps: true
-            }
-          ]
-        },
+        data: { labels: sortedYears, datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false
-          },
+          interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -2647,6 +2851,241 @@
     }
 
     /**
+     * Country Comparison: fetch two countries and render overlay chart + table
+     */
+    async function triggerCompareFetch() {
+      const compareSelect = document.getElementById('compareSelect');
+      const panel = document.getElementById('comparisonPanel');
+      if (!compareSelect || !panel) return;
+
+      const other = compareSelect.value;
+      if (!other) {
+        panel.style.display = 'none';
+        AppState.compareData = null;
+        return;
+      }
+      const base = document.getElementById('countrySelect').value;
+      if (other === base) {
+        showToast('Pick a country different from the main one');
+        compareSelect.value = '';
+        panel.style.display = 'none';
+        return;
+      }
+      const range = document.getElementById('rangeSelect').value;
+
+      panel.style.display = 'block';
+      document.getElementById('compareSubtitle').innerText = 'Fetching World Bank observations for both economies...';
+
+      try {
+        const res = await fetch(`/api?action=compare&countries=${base},${other}&range=${range}`).then(r => r.json());
+        if (!res.comparison) throw new Error(res.error || 'comparison failed');
+        AppState.compareData = res;
+
+        // Populate the indicator picker once
+        const indSelect = document.getElementById('compareIndicatorSelect');
+        const keys = Object.keys(res.comparison[base] || {});
+        indSelect.innerHTML = '';
+        keys.forEach(k => {
+          const name = res.comparison[base][k]?.metadata?.name || k;
+          const opt = document.createElement('option');
+          opt.value = k;
+          opt.innerText = name;
+          indSelect.appendChild(opt);
+        });
+
+        renderComparison();
+        showToast(`Comparison loaded: ${base} vs ${other}`);
+      } catch (err) {
+        console.error('Comparison fetch failed:', err);
+        document.getElementById('compareSubtitle').innerText = 'Comparison data could not be retrieved. Try again in a moment.';
+      }
+    }
+
+    function renderComparison() {
+      const res = AppState.compareData;
+      if (!res) return;
+      const [codeA, codeB] = res.countries;
+      const nameA = res.country_names?.[codeA] || codeA;
+      const nameB = res.country_names?.[codeB] || codeB;
+      const key = document.getElementById('compareIndicatorSelect').value;
+      const itemA = res.comparison[codeA]?.[key] || {};
+      const itemB = res.comparison[codeB]?.[key] || {};
+      const meta = itemA.metadata || itemB.metadata || {};
+
+      document.getElementById('compareSubtitle').innerText =
+        `${meta.name || key} (${meta.unit || '%'}) - annual observations only, gaps mean no recorded value.`;
+
+      // Overlay chart on the union of observed years
+      const recA = itemA.records || [];
+      const recB = itemB.records || [];
+      const yearSet = new Set();
+      recA.concat(recB).forEach(r => { if (r && r.year) yearSet.add(Number(r.year)); });
+      const years = Array.from(yearSet).sort((a, b) => a - b);
+      const mapA = new Map(recA.map(r => [Number(r.year), r.value]));
+      const mapB = new Map(recB.map(r => [Number(r.year), r.value]));
+
+      if (AppState.compareChart) AppState.compareChart.destroy();
+      AppState.compareChart = new Chart(document.getElementById('compareChart'), {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: nameA,
+              data: years.map(y => mapA.has(y) ? mapA.get(y) : null),
+              borderColor: '#be123c', backgroundColor: 'rgba(190,18,60,0.08)',
+              borderWidth: 2.6, pointRadius: 4, tension: 0.2, spanGaps: false
+            },
+            {
+              label: nameB,
+              data: years.map(y => mapB.has(y) ? mapB.get(y) : null),
+              borderColor: '#1d4ed8', backgroundColor: 'rgba(29,78,216,0.08)',
+              borderWidth: 2.6, pointRadius: 4, borderDash: [6, 4], tension: 0.2, spanGaps: false
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `  ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(2) + '%' : 'no record'}`
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { font: { family: 'JetBrains Mono', size: 11 } } },
+            y: { ticks: { callback: (v) => `${v}%`, font: { family: 'JetBrains Mono', size: 11 } } }
+          }
+        }
+      });
+
+      // Latest-values table for every indicator
+      const table = document.getElementById('compareTable');
+      const keys = Object.keys(res.comparison[codeA] || {});
+      let html = `<thead><tr>
+        <th style="text-align:left; padding:8px; border-bottom:2px solid var(--border-medium);">Indicator</th>
+        <th style="text-align:right; padding:8px; border-bottom:2px solid var(--border-medium);">${escapeHtml(nameA)}</th>
+        <th style="text-align:right; padding:8px; border-bottom:2px solid var(--border-medium);">${escapeHtml(nameB)}</th>
+      </tr></thead><tbody>`;
+      keys.forEach(k => {
+        const m = res.comparison[codeA][k]?.metadata || {};
+        const sA = res.comparison[codeA][k]?.summary || {};
+        const sB = res.comparison[codeB][k]?.summary || {};
+        const cellA = sA.has_data ? `${Number(sA.latest_value).toFixed(2)}% <span style="color:var(--text-muted);">(${sA.latest_year})</span>` : '<span style="color:var(--text-muted);">no record</span>';
+        const cellB = sB.has_data ? `${Number(sB.latest_value).toFixed(2)}% <span style="color:var(--text-muted);">(${sB.latest_year})</span>` : '<span style="color:var(--text-muted);">no record</span>';
+        html += `<tr>
+          <td style="padding:8px; border-bottom:1px solid var(--border-subtle, #e2e8f0);">${escapeHtml(m.name || k)} <span style="color:var(--text-muted); font-size:var(--text-size-6);">${escapeHtml(m.unit || '')}</span></td>
+          <td style="padding:8px; border-bottom:1px solid var(--border-subtle, #e2e8f0); text-align:right;" class="num-tabular">${cellA}</td>
+          <td style="padding:8px; border-bottom:1px solid var(--border-subtle, #e2e8f0); text-align:right;" class="num-tabular">${cellB}</td>
+        </tr>`;
+      });
+      table.innerHTML = html + '</tbody>';
+    }
+
+    /**
+     * Analytics Suite: News Pulse, Shock Radar, Outlook Engine, LinkLens
+     */
+    async function triggerAnalyticsFetch() {
+      const country = document.getElementById('countrySelect').value;
+      const range = document.getElementById('rangeSelect').value;
+      const cacheKey = `analytics_${country}_${range}`;
+      const now = Date.now();
+      if (AppState.analyticsCache.has(cacheKey)) {
+        const cached = AppState.analyticsCache.get(cacheKey);
+        if (now - cached.timestamp < AppState.staleTimeMs) {
+          renderAnalytics(cached.data);
+          return;
+        }
+      }
+      try {
+        const data = await fetch(`/api?action=analytics&country=${country}&range=${range}`).then(r => r.json());
+        AppState.analyticsCache.set(cacheKey, { timestamp: now, data });
+        renderAnalytics(data);
+      } catch (err) {
+        console.error('Analytics fetch failed:', err);
+      }
+    }
+
+    function renderAnalytics(data) {
+      if (!data) return;
+
+      // News Pulse
+      const pulseEl = document.getElementById('newsPulseBody');
+      if (pulseEl && data.news_pulse && data.news_pulse.overall) {
+        const overall = data.news_pulse.overall;
+        const rows = (data.news_pulse.by_topic || []).map(t =>
+          `<div style="display:flex; justify-content:space-between; padding:3px 0;">
+             <span>${escapeHtml(t.category)}</span>
+             <strong class="num-tabular">${escapeHtml(t.mood_label)} (${Number(t.avg_score).toFixed(2)})</strong>
+           </div>`).join('');
+        pulseEl.innerHTML = `
+          <div style="display:flex; justify-content:space-between; padding-bottom:6px; border-bottom:1px solid var(--border-subtle, #e2e8f0); margin-bottom:6px;">
+            <span>Overall mood (${overall.article_count} articles)</span>
+            <strong class="num-tabular">${escapeHtml(overall.mood_label)} (${Number(overall.avg_score).toFixed(2)})</strong>
+          </div>${rows}`;
+      } else if (pulseEl) {
+        pulseEl.innerText = 'No news articles available for tone scoring.';
+      }
+
+      // Shock Radar
+      const radarEl = document.getElementById('shockRadarBody');
+      if (radarEl && data.shock_radar) {
+        const flags = [];
+        Object.values(data.shock_radar).forEach(det => {
+          (det.flags || []).forEach(f => flags.push({ ...f, indicator: det.indicator_name }));
+        });
+        if (flags.length) {
+          radarEl.innerHTML = flags.map(f =>
+            `<div style="padding:4px 0;">
+               <strong style="color:#c0392b;">${f.direction === 'spike' ? 'Spike' : 'Drop'} ${f.year}</strong> -
+               ${escapeHtml(f.indicator || '')} recorded ${Number(f.value).toFixed(2)}
+               (${Number(f.change).toFixed(2)} pts vs prior year)
+             </div>`).join('');
+        } else {
+          radarEl.innerText = 'No unusually sharp movements detected in the selected range.';
+        }
+      }
+
+      // Outlook Engine
+      const outEl = document.getElementById('outlookBody');
+      if (outEl && data.outlook) {
+        const rows = [];
+        Object.values(data.outlook).forEach(fc => {
+          if (fc.has_forecast && fc.forecast && fc.forecast.length) {
+            const last = fc.forecast[fc.forecast.length - 1];
+            rows.push(`<div style="display:flex; justify-content:space-between; padding:3px 0;">
+              <span>${escapeHtml(fc.indicator_name || '')}</span>
+              <strong class="num-tabular">${Number(last.predicted).toFixed(2)}% by ${last.year}</strong>
+            </div>`);
+          }
+        });
+        outEl.innerHTML = rows.length
+          ? rows.join('') + '<div style="margin-top:6px; font-size:var(--text-size-6); color:var(--text-muted);">Straight-line trend extension only - not a prediction or advice.</div>'
+          : 'Not enough recorded history to extend a trend.';
+      }
+
+      // LinkLens
+      const lensEl = document.getElementById('linklensBody');
+      if (lensEl && data.linklens) {
+        const rows = [];
+        Object.values(data.linklens).forEach(lens => {
+          if (lens.has_result) {
+            const r = lens.r_sentiment;
+            rows.push(`<div style="display:flex; justify-content:space-between; padding:3px 0;">
+              <span>${escapeHtml(lens.indicator_name || '')}</span>
+              <strong class="num-tabular">r = ${r !== null && r !== undefined ? Number(r).toFixed(2) : 'n/a'} (${lens.n_overlap} yrs)</strong>
+            </div>`);
+          }
+        });
+        lensEl.innerHTML = rows.length
+          ? rows.join('') + '<div style="margin-top:6px; font-size:var(--text-size-6); color:var(--text-muted);">Correlation does not imply causation.</div>'
+          : 'News covers too few calendar years to compare with annual indicators yet - LinkLens needs at least 8 overlapping years.';
+      }
+    }
+
+    /**
      * Render Deterministic NLP Economic Interpretations
      */
     function renderInterpretations(interps) {
@@ -2657,7 +3096,10 @@
       const items = [
         { key: 'inflation', title: 'Inflation Analysis', color: '#be123c', code: 'FP.CPI.TOTL.ZG' },
         { key: 'unemployment', title: 'Labor Market Analysis', color: '#b45309', code: 'SL.UEM.TOTL.ZS' },
-        { key: 'gdp_growth', title: 'GDP Output Analysis', color: '#047857', code: 'NY.GDP.MKTP.KD.ZG' }
+        { key: 'gdp_growth', title: 'GDP Output Analysis', color: '#047857', code: 'NY.GDP.MKTP.KD.ZG' },
+        { key: 'gdp_per_capita_growth', title: 'GDP per Capita Analysis', color: '#0d9488', code: 'NY.GDP.PCAP.KD.ZG' },
+        { key: 'exports_gdp', title: 'Exports Share Analysis', color: '#1d4ed8', code: 'NE.EXP.GNFS.ZS' },
+        { key: 'fdi_inflows_gdp', title: 'FDI Inflows Analysis', color: '#7c3aed', code: 'BX.KLT.DINV.WD.GD.ZS' }
       ];
 
       items.forEach(item => {
@@ -2739,7 +3181,8 @@
           const t = (a.title || '').toLowerCase();
           const d = (a.description || '').toLowerCase();
           const k = (a.matched_keywords || '').toLowerCase();
-          return t.includes(AppState.searchQuery) || d.includes(AppState.searchQuery) || k.includes(AppState.searchQuery);
+          const kt = (a.key_terms || '').toLowerCase();
+          return t.includes(AppState.searchQuery) || d.includes(AppState.searchQuery) || k.includes(AppState.searchQuery) || kt.includes(AppState.searchQuery);
         });
       }
 
@@ -2788,9 +3231,9 @@
             </a>
             <p class="story-snippet">${escapeHtml(art.description || 'No summary text available.')}</p>
           </div>
-          <div class="story-card-footer">
+          <div class="story-card-footer" style="flex-direction:column; align-items:flex-start; gap:2px;">
             <span>Keywords: <strong style="color:var(--text-secondary);">${escapeHtml(art.matched_keywords || 'macro')}</strong></span>
-            <span>&rarr;</span>
+            ${art.key_terms && art.key_terms !== 'None' ? `<span style="font-size:var(--text-size-6); color:var(--text-muted);">Key terms (TF-IDF): ${escapeHtml(art.key_terms)}</span>` : ''}
           </div>
         `;
         container.appendChild(card);

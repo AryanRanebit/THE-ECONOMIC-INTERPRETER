@@ -9,6 +9,8 @@ Supported Endpoints:
 - GET /api/index?action=indicators&country=IN&range=2015:2025
 - GET /api/index?action=news
 - GET /api/index?action=interpret&country=IN&range=2015:2025
+- GET /api/index?action=compare&countries=IN,US&range=2015:2025
+- GET /api/index?action=analytics&country=IN&range=2015:2025
 """
 
 import json
@@ -27,9 +29,17 @@ import numpy as np
 import pandas as pd
 
 from modules.analysis import generate_all_interpretations
-from modules.economic_data import INDICATOR_METADATA, load_all_economic_data
+from modules.anomaly import detect_all_anomalies
+from modules.correlation import compute_all_linklens
+from modules.economic_data import (
+    INDICATOR_METADATA,
+    SUPPORTED_COUNTRIES,
+    load_all_economic_data,
+)
+from modules.forecast import forecast_all_indicators
 from modules.news_data import get_economic_news
-from modules.text_processing import categorize_dataframe
+from modules.sentiment import add_sentiment_scores, aggregate_mood, overall_mood
+from modules.text_processing import categorize_dataframe_tfidf
 
 
 def clean_for_json(obj):
@@ -97,6 +107,8 @@ class handler(BaseHTTPRequestHandler):
                         "?action=indicators&country=IN&range=2015:2025",
                         "?action=news",
                         "?action=interpret&country=IN&range=2015:2025",
+                        "?action=compare&countries=IN,US&range=2015:2025",
+                        "?action=analytics&country=IN&range=2015:2025",
                     ],
                 })
 
@@ -118,7 +130,7 @@ class handler(BaseHTTPRequestHandler):
             elif action == "news":
                 use_sample = params.get("use_sample", ["false"])[0].lower() == "true"
                 news_payload = get_economic_news(use_sample_data=use_sample)
-                categorized_df = categorize_dataframe(news_payload.get("articles", pd.DataFrame()))
+                categorized_df = categorize_dataframe_tfidf(news_payload.get("articles", pd.DataFrame()))
 
                 self._send_json_response(200, {
                     "source_type": news_payload.get("source_type"),
@@ -131,7 +143,7 @@ class handler(BaseHTTPRequestHandler):
                 use_sample = params.get("use_sample", ["false"])[0].lower() == "true"
                 econ_data = load_all_economic_data(country_code=country, date_range=date_range)
                 news_payload = get_economic_news(use_sample_data=use_sample)
-                categorized_df = categorize_dataframe(news_payload.get("articles", pd.DataFrame()))
+                categorized_df = categorize_dataframe_tfidf(news_payload.get("articles", pd.DataFrame()))
                 interpretations = generate_all_interpretations(econ_data, categorized_df)
 
                 self._send_json_response(200, {
@@ -140,9 +152,58 @@ class handler(BaseHTTPRequestHandler):
                     "interpretations": interpretations,
                 })
 
+            elif action == "compare":
+                raw_countries = params.get("countries", ["IN,US"])[0]
+                codes = [c.strip().upper() for c in raw_countries.split(",") if c.strip()]
+                codes = [c for c in codes if c in SUPPORTED_COUNTRIES][:2]
+                if len(codes) < 2:
+                    self._send_json_response(400, {
+                        "error": "Comparison needs two valid country codes, e.g. ?action=compare&countries=IN,US",
+                        "supported": sorted(SUPPORTED_COUNTRIES.keys()),
+                    })
+                    return
+                comparison = {}
+                for code in codes:
+                    data = load_all_economic_data(country_code=code, date_range=date_range)
+                    comparison[code] = {
+                        key: {
+                            "metadata": item.get("metadata", {}),
+                            "summary": item.get("summary", {}),
+                            "records": item.get("data", pd.DataFrame()),
+                        }
+                        for key, item in data.items()
+                    }
+                self._send_json_response(200, {
+                    "countries": codes,
+                    "country_names": {c: SUPPORTED_COUNTRIES[c] for c in codes},
+                    "date_range": date_range,
+                    "comparison": comparison,
+                })
+
+            elif action == "analytics":
+                use_sample = params.get("use_sample", ["false"])[0].lower() == "true"
+                econ_data = load_all_economic_data(country_code=country, date_range=date_range)
+                news_payload = get_economic_news(use_sample_data=use_sample)
+                articles_df = categorize_dataframe_tfidf(news_payload.get("articles", pd.DataFrame()))
+                articles_df = add_sentiment_scores(articles_df)
+
+                self._send_json_response(200, {
+                    "country": country,
+                    "date_range": date_range,
+                    "news_pulse": {
+                        "overall": overall_mood(articles_df) if not articles_df.empty else None,
+                        "by_topic": aggregate_mood(articles_df) if not articles_df.empty else pd.DataFrame(),
+                    },
+                    "shock_radar": detect_all_anomalies(econ_data),
+                    "outlook": forecast_all_indicators(econ_data),
+                    "linklens": compute_all_linklens(articles_df, econ_data),
+                    "article_count": len(articles_df),
+                    "is_sample": news_payload.get("is_sample"),
+                })
+
             else:
                 self._send_json_response(400, {
-                    "error": f"Unknown action: '{action}'. Expected 'health', 'indicators', 'news', or 'interpret'."
+                    "error": f"Unknown action: '{action}'. Expected 'health', 'indicators', 'news', 'interpret', 'compare', or 'analytics'."
                 })
 
         except Exception as err:
