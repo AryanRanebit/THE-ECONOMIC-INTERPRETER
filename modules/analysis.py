@@ -19,6 +19,9 @@ INDICATOR_TO_NEWS_CATEGORIES: Dict[str, List[str]] = {
     "inflation": ["Inflation", "Monetary Policy"],
     "unemployment": ["Employment"],
     "gdp_growth": ["GDP and Economic Growth", "Monetary Policy"],
+    "gdp_per_capita_growth": ["GDP and Economic Growth"],
+    "exports_gdp": ["GDP and Economic Growth"],
+    "fdi_inflows_gdp": ["GDP and Economic Growth", "Monetary Policy"],
 }
 
 # General analytical limitation statement applied across interpretations
@@ -91,6 +94,58 @@ def get_economic_mechanism_explanation(indicator_key: str, direction: str) -> st
                 "broadly keeping pace with the inflow of new job-seekers entering the active labor force."
             ),
             "insufficient data": "Insufficient historical data available to evaluate labor market mechanisms.",
+        },
+        "gdp_per_capita_growth": {
+            "increased": (
+                "Possible Economic Mechanism: Rising GDP per capita means output is growing faster than the population, "
+                "which usually reflects productivity gains, urbanization, or a shift toward higher-value industries. "
+                "It is a rough proxy for improving average living standards, though it says nothing about how evenly "
+                "income is distributed."
+            ),
+            "decreased": (
+                "Possible Economic Mechanism: Slowing GDP per capita growth suggests output is barely keeping pace with "
+                "population growth, which can reflect weak productivity, subdued investment, or external shocks that hit "
+                "total output harder than population."
+            ),
+            "remained steady": (
+                "Possible Economic Mechanism: Steady GDP per capita growth indicates output and population are expanding "
+                "at a stable relative pace, leaving average per-person income on a predictable path."
+            ),
+            "insufficient data": "Insufficient historical data available to evaluate per-capita growth mechanisms.",
+        },
+        "exports_gdp": {
+            "increased": (
+                "Possible Economic Mechanism: A rising exports-to-GDP share indicates foreign demand is becoming a larger "
+                "driver of the economy. This can follow currency depreciation that makes domestic goods cheaper abroad, "
+                "new trade agreements, or competitive gains in manufacturing and services."
+            ),
+            "decreased": (
+                "Possible Economic Mechanism: A falling exports-to-GDP share can reflect weak demand in key trading "
+                "partners, an appreciating currency that makes exports costlier, or domestic consumption growing faster "
+                "than foreign sales."
+            ),
+            "remained steady": (
+                "Possible Economic Mechanism: A steady exports-to-GDP share suggests foreign demand and domestic output "
+                "are growing at similar rates, keeping the economy's openness to trade stable."
+            ),
+            "insufficient data": "Insufficient historical data available to evaluate export mechanisms.",
+        },
+        "fdi_inflows_gdp": {
+            "increased": (
+                "Possible Economic Mechanism: Rising FDI inflows relative to GDP usually signal improving investor "
+                "confidence - for example after liberalized investment rules, privatization, or large infrastructure "
+                "programs that attract long-term foreign capital."
+            ),
+            "decreased": (
+                "Possible Economic Mechanism: Falling FDI inflows can reflect tighter global financial conditions, "
+                "policy uncertainty, or foreign investors shifting toward other markets offering better risk-adjusted "
+                "returns."
+            ),
+            "remained steady": (
+                "Possible Economic Mechanism: Steady FDI inflows suggest a stable investment climate with no major "
+                "policy or global financing shifts affecting long-term foreign capital."
+            ),
+            "insufficient data": "Insufficient historical data available to evaluate investment-flow mechanisms.",
         },
         "gdp_growth": {
             "increased": (
