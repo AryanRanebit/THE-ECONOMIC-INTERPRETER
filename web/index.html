@@ -1,0 +1,446 @@
+<!doctype html>
+<!--
+  The Economic Interpreter - editorial frontend (additional track, Streamlit app is unchanged).
+  Visual language adapted from the free "Midblock" architecture template by 8B (MIT):
+  https://github.com/8bsite/architecture-website-template
+  One file, no build step. Data comes from the JSON API in api/index.py (/api?action=...).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Economic Interpreter - macro trends and news, in plain language</title>
+<meta name="description" content="Inflation, unemployment and GDP growth from World Bank data, next to live economic headlines, explained plainly and honestly.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a2430'/%3E%3Cpath d='M12 46 26 30l9 8 17-20' fill='none' stroke='%23e7a36a' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mozilla+Headline:wght@500..700&family=Mozilla+Text:wght@400..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#d9e4f0; --ink:#1a2430; --paper:#f3eeed; --rust:#b9471f; --sand:#e7a36a; --teal:#3f6964;
+  --blue:#26419b; --red:#d22630; --white:#fff; --slate:#475463; --mist:#a9c1dd; --blush:#e6dad8;
+  --head:"Mozilla Headline","Arial Narrow",Arial,sans-serif;
+  --text:"Mozilla Text",Arial,sans-serif;
+  --pad:clamp(20px,4vw,64px);
+  --gap:clamp(72px,11vw,160px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+body{margin:0;background:var(--sky);color:var(--ink);font-family:var(--text);font-size:clamp(16px,.4vw + 14px,18px);line-height:1.55;overflow-x:hidden}
+h1,h2,h3,h4,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:inherit}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+[data-tone=dark] :focus-visible{outline-color:var(--sand)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;line-height:1.3}
+.display{font-family:var(--head);font-weight:650;font-stretch:75%;line-height:.93;letter-spacing:-.005em;font-size:clamp(44px,6.4vw,104px)}
+.h2{font-family:var(--head);font-weight:620;font-stretch:75%;line-height:.95;font-size:clamp(38px,4.6vw,76px)}
+section{position:relative}
+[data-tone=dark]{background:var(--ink);color:var(--paper)}
+.wrap{padding:var(--gap) var(--pad)}
+.lead{max-width:56ch;color:var(--slate)}
+[data-tone=dark] .lead{color:var(--mist)}
+
+/* nav */
+header.nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px var(--pad);mix-blend-mode:normal;transition:background .3s,color .3s}
+header.nav.solid{background:rgba(217,228,240,.88);backdrop-filter:blur(10px);box-shadow:0 1px 0 rgba(26,36,48,.12)}
+.brand{font-family:var(--head);font-stretch:75%;font-weight:700;font-size:28px;line-height:1;text-decoration:none;letter-spacing:.01em}
+.brand i{font-style:normal;color:var(--rust)}
+.nav-links{display:flex;gap:26px;align-items:center}
+.nav-links a{font-size:14px;font-weight:600;text-decoration:none;opacity:.8}
+.nav-links a:hover{opacity:1;text-decoration:underline;text-underline-offset:4px}
+.country{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.country select{background:var(--ink);color:var(--paper);border:0;border-radius:999px;padding:9px 34px 9px 16px;appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23e7a36a' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+@media(max-width:820px){.nav-links a{display:none}.brand{font-size:23px}}
+
+/* opening */
+#opening{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:120px var(--pad) 40px;overflow:hidden}
+#opening .eyebrow{color:var(--rust);margin-bottom:22px}
+#opening h1 .line{display:block;overflow:hidden}
+#opening h1 .line span{display:block}
+#opening .sub{margin-top:28px;max-width:52ch;color:var(--slate);font-size:clamp(17px,1.2vw + 11px,21px)}
+.slabs{position:absolute;right:var(--pad);top:120px;bottom:290px;width:min(34vw,420px);display:flex;gap:12px;align-items:flex-end;pointer-events:none}
+.slabs b{flex:1;background:var(--ink);transform-origin:bottom;display:block}
+.slabs b:nth-child(2){background:var(--rust)}
+.slabs b:nth-child(3){background:var(--teal)}
+.slabs b:nth-child(4){background:var(--sand)}
+.slabs b:nth-child(5){background:var(--blue)}
+@media(max-width:820px){.slabs{width:44vw;top:90px;bottom:auto;height:22svh;opacity:.9}.strip .k{font-size:11px;letter-spacing:.04em}}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:56px;border-top:2px solid var(--ink)}
+.strip div{padding:18px 18px 0 0}
+.strip .k{font-size:13px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--slate)}
+.strip .v{font-family:var(--head);font-stretch:75%;font-weight:650;font-size:clamp(34px,4vw,64px);line-height:1}
+.scrollcue{margin-top:28px;font-size:13px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--slate)}
+
+/* indicators: sideways scroll */
+#indicators .head{padding:var(--gap) var(--pad) 36px;display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap}
+.pin{position:relative}
+.track{display:flex;gap:2.6vw;padding:0 var(--pad) 48px;align-items:stretch}
+.card{flex:0 0 min(86vw,560px);background:var(--paper);padding:24px 28px;display:flex;flex-direction:column;gap:12px;border-top:6px solid var(--c,var(--ink))}
+.card .top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.card .no{font-family:var(--head);font-stretch:75%;font-weight:700;font-size:20px;color:var(--c)}
+.card h3{font-family:var(--head);font-stretch:75%;font-weight:650;font-size:clamp(34px,3.4vw,52px);line-height:.95}
+.card .big{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.card .big strong{font-family:var(--head);font-stretch:75%;font-weight:700;font-size:clamp(64px,7vw,104px);line-height:.9}
+.chip{font-size:13px;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--blush);white-space:nowrap}
+.chip.good{background:#cfe3df;color:#1f4a45}.chip.bad{background:#f4cfc6;color:#8a2a0e}.chip.flat{background:var(--blush)}
+.card p.desc{color:var(--slate);font-size:15px}
+.chart{width:100%;height:auto;display:block;touch-action:pan-y;overflow:visible}
+.chart .grid{stroke:rgba(26,36,48,.14);stroke-width:1}
+.chart text{font-family:var(--text);font-size:11px;fill:var(--slate)}
+.chart .line{fill:none;stroke:var(--c);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.chart .area{fill:var(--c);opacity:.12}
+.chart .pt{fill:var(--paper);stroke:var(--c);stroke-width:2}
+.chart .hit{fill:transparent;cursor:crosshair}
+.readout{font-size:13px;color:var(--slate);min-height:20px;font-weight:600}
+.card .meta{margin-top:auto;font-size:12px;color:var(--slate);border-top:1px solid rgba(26,36,48,.15);padding-top:10px}
+.skeleton{background:linear-gradient(90deg,rgba(26,36,48,.07),rgba(26,36,48,.14),rgba(26,36,48,.07));background-size:200% 100%;animation:sk 1.4s infinite;border-radius:3px;min-height:1em}
+@keyframes sk{to{background-position:-200% 0}}
+@media(min-width:900px){
+  #indicators[data-walk] .pin{height:100svh;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+  #indicators[data-walk] .track{flex-wrap:nowrap;width:max-content;padding-bottom:0}
+  #indicators[data-walk] .head{padding-bottom:16px;padding-top:84px}
+  #indicators[data-walk] .h2{font-size:clamp(34px,4vw,60px)}
+  #indicators[data-walk] .card .big strong{font-size:clamp(56px,6vw,84px)}
+  #indicators[data-walk] .chart{max-height:27svh}
+}
+@media(max-width:899px){.track{flex-direction:column}.card{flex-basis:auto;min-height:0}}
+
+/* register (table) */
+#register .tablewrap{overflow-x:auto;margin-top:40px;border-top:2px solid var(--paper)}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th,td{text-align:left;padding:14px 12px 14px 0;border-bottom:1px solid rgba(243,238,237,.18);font-variant-numeric:tabular-nums}
+th{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--sand);font-weight:600}
+td.y{font-family:var(--head);font-stretch:75%;font-weight:650;font-size:26px}
+td.na{color:var(--mist);opacity:.6}
+tr:hover td{background:rgba(243,238,237,.05)}
+
+/* news */
+.topics{display:flex;flex-wrap:wrap;gap:10px;margin:36px 0 12px}
+.topics button{border:2px solid var(--ink);background:transparent;padding:9px 16px;border-radius:999px;font-weight:600;font-size:14px;cursor:pointer;transition:background .2s,color .2s}
+.topics button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.topics button:hover{background:rgba(26,36,48,.08)}
+.topics button[aria-pressed=true]:hover{background:var(--ink)}
+.notice{font-size:14px;color:var(--slate);max-width:70ch}
+.newslist{margin-top:28px;border-top:2px solid var(--ink)}
+.newslist a{display:grid;grid-template-columns:minmax(120px,190px) 1fr auto;gap:8px 28px;padding:20px 0;border-bottom:1px solid rgba(26,36,48,.2);text-decoration:none;align-items:baseline;transition:padding .25s,background .25s}
+.newslist a:hover{padding-left:14px;background:rgba(255,255,255,.35)}
+.newslist .src{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--rust)}
+.newslist .ttl{font-family:var(--head);font-stretch:75%;font-weight:600;font-size:clamp(22px,2.2vw,32px);line-height:1.05}
+.newslist .dt{font-size:13px;color:var(--slate);white-space:nowrap}
+.newslist .tp{grid-column:2;font-size:12px;font-weight:600;color:var(--teal)}
+@media(max-width:700px){.newslist a{grid-template-columns:1fr}.newslist .tp{grid-column:1}}
+.more{margin-top:24px;background:var(--ink);color:var(--paper);border:0;padding:14px 26px;border-radius:999px;font-weight:600;cursor:pointer}
+
+/* interpretation */
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin:36px 0 36px}
+.tabs button{background:transparent;border:2px solid var(--mist);color:var(--paper);padding:10px 20px;border-radius:999px;font-weight:600;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--sand);border-color:var(--sand);color:var(--ink)}
+.interp{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(28px,5vw,80px)}
+@media(max-width:900px){.interp{grid-template-columns:1fr}}
+.interp h3{font-family:var(--head);font-stretch:75%;font-weight:650;font-size:clamp(30px,3.4vw,52px);line-height:.98;margin-bottom:18px}
+.interp .blk{margin-bottom:26px}
+.interp .blk h4{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--sand);margin-bottom:8px}
+.interp .blk p{color:var(--paper);opacity:.92}
+.interp .warn{border-left:3px solid var(--sand);padding-left:16px;color:var(--mist)!important}
+.interp ul.rel li{padding:12px 0;border-bottom:1px solid rgba(243,238,237,.18)}
+.interp ul.rel a{text-decoration:none;font-weight:600}
+.interp ul.rel a:hover{text-decoration:underline}
+.interp ul.rel small{display:block;color:var(--mist)}
+
+/* method */
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(24px,4vw,64px);margin-top:44px}
+@media(max-width:820px){.cols{grid-template-columns:1fr}}
+.cols div{border-top:2px solid var(--ink);padding-top:16px}
+.cols h4{font-family:var(--head);font-stretch:75%;font-size:28px;font-weight:650;margin-bottom:8px}
+.cols p{color:var(--slate);font-size:15px}
+
+/* footer */
+footer{padding:48px var(--pad) 28px;overflow:hidden}
+footer .mark{font-family:var(--head);font-stretch:75%;font-weight:700;line-height:.82;letter-spacing:-.01em;font-size:clamp(56px,15.5vw,260px);white-space:nowrap;color:var(--sand);display:block}
+footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:28px;font-size:13px;color:var(--mist)}
+
+/* states */
+.state{padding:28px;background:var(--paper);border-left:6px solid var(--rust);max-width:640px}
+[data-tone=dark] .state{background:rgba(243,238,237,.08);color:var(--paper)}
+.state button{margin-top:12px;background:var(--ink);color:var(--paper);border:0;padding:10px 20px;border-radius:999px;font-weight:600;cursor:pointer}
+[data-tone=dark] .state button{background:var(--sand);color:var(--ink)}
+.reveal{opacity:0;transform:translateY(28px)}
+.no-js .reveal,.reduce .reveal{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<a class="sr" href="#indicators">Skip to indicators</a>
+<header class="nav" id="nav">
+  <a class="brand" href="#opening">Economic <i>Interpreter</i></a>
+  <nav class="nav-links" aria-label="Main">
+    <a href="#indicators">Indicators</a><a href="#register">Year by year</a><a href="#news">News</a><a href="#interpretation">Interpretation</a><a href="#method">About the data</a>
+  </nav>
+  <label class="country"><span class="sr">Country</span>
+    <select id="country" aria-label="Country">
+      <option value="IN">India</option><option value="US">United States</option><option value="GB">United Kingdom</option><option value="DE">Germany</option><option value="JP">Japan</option>
+    </select>
+  </label>
+</header>
+
+<main>
+<section id="opening" aria-labelledby="op-title">
+  <div class="slabs" aria-hidden="true"><b style="height:46%"></b><b style="height:78%"></b><b style="height:58%"></b><b style="height:92%"></b><b style="height:66%"></b></div>
+  <p class="eyebrow">World Bank data + live headlines</p>
+  <h1 id="op-title" class="display"><span class="line"><span>The economy,</span></span><span class="line"><span>read plainly.</span></span></h1>
+  <p class="sub">Inflation, unemployment and GDP growth for <b id="op-country">India</b>, set next to what the news is saying, with the limits of both stated up front.</p>
+  <div class="strip" id="strip" aria-live="polite">
+    <div><div class="k">Inflation</div><div class="v skeleton">&nbsp;</div></div>
+    <div><div class="k">Unemployment</div><div class="v skeleton">&nbsp;</div></div>
+    <div><div class="k">GDP growth</div><div class="v skeleton">&nbsp;</div></div>
+  </div>
+  <p class="scrollcue">Scroll &darr; the indicators move sideways</p>
+</section>
+
+<section id="indicators" aria-labelledby="in-title">
+  <div class="pin">
+    <div class="head">
+      <div><p class="eyebrow" style="color:var(--rust)">01 - The numbers</p><h2 id="in-title" class="h2">Three indicators,<br>one country.</h2></div>
+      <p class="lead">Each chart shows one yearly value per year, straight from the World Bank. Hover or tap a point to read it.</p>
+    </div>
+    <div class="track" id="track"></div>
+  </div>
+</section>
+
+<section id="register" data-tone="dark" aria-labelledby="rg-title">
+  <div class="wrap">
+    <p class="eyebrow" style="color:var(--sand)">02 - Year by year</p>
+    <h2 id="rg-title" class="h2" style="margin-top:14px">The register.</h2>
+    <p class="lead" style="margin-top:18px">All three indicators side by side. A dash means the World Bank has not published that year yet.</p>
+    <div class="tablewrap" id="regwrap"><div class="skeleton" style="height:260px"></div></div>
+  </div>
+</section>
+
+<section id="news" aria-labelledby="nw-title">
+  <div class="wrap">
+    <p class="eyebrow" style="color:var(--rust)">03 - The headlines</p>
+    <h2 id="nw-title" class="h2" style="margin-top:14px">What the news says.</h2>
+    <p class="lead" style="margin-top:18px">Headlines are pulled live and sorted into topics by simple keyword matching. Topics are a rough guide, not a verdict.</p>
+    <div class="topics" id="topics" role="group" aria-label="Filter by topic"></div>
+    <p class="notice" id="newsnote"></p>
+    <div class="newslist" id="newslist"><div class="skeleton" style="height:240px"></div></div>
+    <button class="more" id="more" hidden>Show more headlines</button>
+  </div>
+</section>
+
+<section id="interpretation" data-tone="dark" aria-labelledby="ip-title">
+  <div class="wrap">
+    <p class="eyebrow" style="color:var(--sand)">04 - Interpretation</p>
+    <h2 id="ip-title" class="h2" style="margin-top:14px">What it might mean.</h2>
+    <p class="lead" style="margin-top:18px">For each indicator: what changed, a possible explanation, and what this analysis cannot tell you.</p>
+    <div class="tabs" id="tabs" role="tablist" aria-label="Indicator"></div>
+    <div id="interp" role="tabpanel"><div class="skeleton" style="height:300px;opacity:.3"></div></div>
+  </div>
+</section>
+
+<section id="method" aria-labelledby="mt-title">
+  <div class="wrap">
+    <p class="eyebrow" style="color:var(--rust)">05 - About the data</p>
+    <h2 id="mt-title" class="h2" style="margin-top:14px">Honest by design.</h2>
+    <div class="cols">
+      <div><h4>Yearly, not monthly</h4><p>World Bank indicators are annual. The latest year is often a preliminary estimate and gets revised. Nothing here is estimated between years.</p></div>
+      <div><h4>News is a snapshot</h4><p>Headlines come from a live news feed and can be older than the latest data year. Each one shows its own date. Keyword topics can misfile a story.</p></div>
+      <div><h4>Not advice</h4><p>Seeing two things move together does not show one caused the other. This is a learning tool, not investment or policy advice.</p></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer data-tone="dark">
+  <span class="mark" aria-hidden="true">Interpreter</span>
+  <div class="small"><span>Data: World Bank Open Data &middot; Headlines: Google News RSS</span><span>Design adapted from the free Midblock template by 8B (MIT)</span><span><a href="#opening">Back to top &uarr;</a></span></div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.27/dist/lenis.min.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var API=(new URLSearchParams(location.search).get('api'))||'/api';
+var RANGE='2010:2025';
+var COUNTRIES={IN:'India',US:'United States',GB:'United Kingdom',DE:'Germany',JP:'Japan'};
+var META={
+  inflation:{n:'01',title:'Inflation',color:'#b9471f',badWhenUp:true,desc:'How fast everyday prices rise, per year. Lower and steady is easier on households.'},
+  unemployment:{n:'02',title:'Unemployment',color:'#26419b',badWhenUp:true,desc:'Share of people who want work but cannot find it. Rising numbers signal a weaker job market.'},
+  gdp_growth:{n:'03',title:'GDP growth',color:'#3f6964',badWhenUp:false,desc:'How much the whole economy grew compared with the year before. Negative means it shrank.'}
+};
+var KEYS=['inflation','unemployment','gdp_growth'];
+var state={country:'IN',ind:null,news:null,interp:null,topic:'All',shown:12,tab:'inflation'};
+var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(reduce)document.documentElement.classList.add('reduce');
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var fmt=function(v,d){return v==null||isNaN(v)?'-':Number(v).toFixed(d==null?1:d)};
+var stripPrefix=function(t){return String(t||'').replace(/^(Possible Economic Mechanism|Analytical Boundaries & Limitations|Observed Trend):\s*/i,'')};
+
+function getJSON(q){
+  var c=new AbortController(),t=setTimeout(function(){c.abort()},45000);
+  return fetch(API+(API.indexOf('?')>-1?'&':'?')+q.replace(/^\?/,''),{signal:c.signal}).then(function(r){
+    clearTimeout(t);
+    if(!r.ok)return r.json().catch(function(){return {}}).then(function(b){throw new Error(b.details||b.error||('HTTP '+r.status))});
+    return r.json();
+  }).catch(function(e){clearTimeout(t);throw new Error(e.name==='AbortError'?'The request timed out':e.message)});
+}
+function errBox(msg,retry){
+  return '<div class="state" role="alert"><b>Could not load this part.</b><p style="margin-top:6px">'+esc(msg)+'. No numbers are shown rather than guessing.</p><button data-retry="'+retry+'">Try again</button></div>';
+}
+
+/* ---------- charts ---------- */
+function chartSVG(records,color,id){
+  var pts=records.filter(function(r){return r.value!=null});
+  if(pts.length<2)return '<p class="notice">Not enough yearly data to draw a chart.</p>';
+  var W=520,H=240,L=38,R=12,T=14,B=28;
+  var xs=pts.map(function(p){return p.year}),ys=pts.map(function(p){return p.value});
+  var x0=Math.min.apply(0,xs),x1=Math.max.apply(0,xs);
+  var y0=Math.min(0,Math.min.apply(0,ys)),y1=Math.max.apply(0,ys);
+  var pad=(y1-y0)*.08||1;y1+=pad;if(y0<0)y0-=pad;
+  var X=function(x){return L+(x-x0)/(x1-x0)*(W-L-R)},Y=function(y){return T+(1-(y-y0)/(y1-y0))*(H-T-B)};
+  var g='',ticks=4;
+  for(var i=0;i<=ticks;i++){var v=y0+(y1-y0)*i/ticks,y=Y(v);g+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(L-6)+'" y="'+(y+4)+'" text-anchor="end">'+v.toFixed(1)+'</text>'}
+  var step=Math.ceil((x1-x0)/6);
+  for(var yr=x0;yr<=x1;yr+=step)g+='<text x="'+X(yr)+'" y="'+(H-8)+'" text-anchor="middle">'+yr+'</text>';
+  if(y0<0)g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(0)+'" y2="'+Y(0)+'" stroke="#1a2430" stroke-width="1.5"/>';
+  var d=pts.map(function(p,i){return (i?'L':'M')+X(p.year).toFixed(1)+' '+Y(p.value).toFixed(1)}).join('');
+  var area=d+'L'+X(pts[pts.length-1].year)+' '+Y(Math.max(y0,0))+'L'+X(pts[0].year)+' '+Y(Math.max(y0,0))+'Z';
+  var dots=pts.map(function(p,i){return '<circle class="pt" data-i="'+i+'" cx="'+X(p.year).toFixed(1)+'" cy="'+Y(p.value).toFixed(1)+'" r="'+(i===pts.length-1?5:3.2)+'"/>'}).join('');
+  var hits=pts.map(function(p,i){var w=(W-L-R)/pts.length;return '<rect class="hit" data-i="'+i+'" x="'+(X(p.year)-w/2)+'" y="0" width="'+w+'" height="'+H+'"/>'}).join('');
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Line chart of yearly values, '+x0+' to '+x1+'" data-id="'+id+'">'+g+'<path class="area" d="'+area+'"/><path class="line" d="'+d+'"/>'+dots+hits+'</svg>';
+}
+function wireChart(card,records){
+  var pts=records.filter(function(r){return r.value!=null}),out=$('.readout',card);
+  var dots=card.querySelectorAll('.pt');
+  function show(i){var p=pts[i];if(!p)return;out.textContent=p.year+': '+fmt(p.value,2)+'%';dots.forEach(function(d,j){d.setAttribute('r',j===i?6:(j===pts.length-1?5:3.2))})}
+  card.querySelectorAll('.hit').forEach(function(h){var i=+h.dataset.i;h.addEventListener('mouseenter',function(){show(i)});h.addEventListener('click',function(){show(i)});h.addEventListener('touchstart',function(){show(i)},{passive:true})});
+  show(pts.length-1);
+}
+
+/* ---------- renderers ---------- */
+function deltaChip(key,s){
+  if(!s||s.change==null)return '';
+  var m=META[key],c=s.change,cls=Math.abs(c)<0.005?'flat':((c>0)===m.badWhenUp?'bad':'good');
+  return '<span class="chip '+cls+'">'+(c>0?'+':'')+fmt(c,2)+' pts vs '+s.previous_year+'</span>';
+}
+function renderStrip(){
+  var h='';
+  KEYS.forEach(function(k){var it=state.ind[k],s=it&&it.summary;h+='<div><div class="k">'+META[k].title+'</div><div class="v">'+(s&&s.has_data?fmt(s.latest_value,1)+'%':'n/a')+'</div></div>'});
+  $('#strip').innerHTML=h;
+}
+function renderCards(){
+  var h='';
+  KEYS.forEach(function(k){
+    var m=META[k],it=state.ind[k]||{},s=it.summary||{},md=it.metadata||{};
+    var ok=s.has_data;
+    h+='<article class="card" style="--c:'+m.color+'" data-k="'+k+'"><div class="top"><span class="no">'+m.n+'</span><span class="eyebrow" style="color:var(--slate)">'+esc(md.unit||'% (Annual)')+'</span></div>'+
+      '<h3>'+m.title+'</h3>'+
+      (ok?'<div class="big"><strong>'+fmt(s.latest_value,2)+'%</strong>'+deltaChip(k,s)+'</div><p class="desc">'+m.desc+' Latest year: '+s.latest_year+'.</p>'+chartSVG(it.records||[],m.color,k)+'<div class="readout" aria-live="polite"></div>'
+          :'<p class="desc">'+m.desc+'</p><div class="state">No data returned for this indicator and country. Nothing is shown rather than guessing.</div>')+
+      '<div class="meta">Source: World Bank '+esc(md.code||'')+' &middot; yearly values</div></article>';
+  });
+  $('#track').innerHTML=h;
+  KEYS.forEach(function(k){var c=$('.card[data-k="'+k+'"]');if(c&&state.ind[k]&&state.ind[k].summary&&state.ind[k].summary.has_data)wireChart(c,state.ind[k].records||[])});
+}
+function renderRegister(){
+  var by={},years={};
+  KEYS.forEach(function(k){((state.ind[k]||{}).records||[]).forEach(function(r){by[r.year]=by[r.year]||{};by[r.year][k]=r.value;years[r.year]=1})});
+  var ys=Object.keys(years).map(Number).sort(function(a,b){return b-a});
+  if(!ys.length){$('#regwrap').innerHTML='<p class="notice" style="color:var(--mist)">No yearly data returned.</p>';return}
+  var h='<table><thead><tr><th>Year</th><th>Inflation</th><th>Unemployment</th><th>GDP growth</th></tr></thead><tbody>';
+  ys.forEach(function(y){h+='<tr><td class="y">'+y+'</td>'+KEYS.map(function(k){var v=(by[y]||{})[k];return v==null?'<td class="na">-</td>':'<td>'+fmt(v,2)+'%</td>'}).join('')+'</tr>'});
+  $('#regwrap').innerHTML=h+'</tbody></table>';
+}
+function renderTopics(){
+  var arts=state.news.articles||[],cnt={};
+  arts.forEach(function(a){cnt[a.category]=(cnt[a.category]||0)+1});
+  var names=['All'].concat(Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a]}));
+  $('#topics').innerHTML=names.map(function(n){return '<button aria-pressed="'+(n===state.topic)+'" data-t="'+esc(n)+'">'+esc(n)+' ('+(n==='All'?arts.length:cnt[n])+')</button>'}).join('');
+}
+function renderNews(){
+  var n=state.news,arts=(n.articles||[]).filter(function(a){return state.topic==='All'||a.category===state.topic});
+  $('#newsnote').textContent=(n.is_sample?'Showing offline sample headlines, not live news. ':'')+'Source: '+(n.source_type||'unknown')+'. '+arts.length+' headline'+(arts.length===1?'':'s')+' shown. Headlines are not filtered by country and may be older than the data above.';
+  if(!arts.length){$('#newslist').innerHTML='<p class="notice" style="margin-top:20px">No headlines in this topic right now.</p>';$('#more').hidden=true;return}
+  $('#newslist').innerHTML=arts.slice(0,state.shown).map(function(a){return '<a href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer"><span class="src">'+esc(a.source||'Unknown')+'</span><span class="ttl">'+esc(a.title)+'</span><span class="dt">'+esc(a.published_at||'')+'</span><span class="tp">'+esc(a.category)+'</span></a>'}).join('');
+  $('#more').hidden=arts.length<=state.shown;
+}
+function renderTabs(){
+  var I=state.interp||{};
+  $('#tabs').innerHTML=KEYS.map(function(k){return '<button role="tab" aria-selected="'+(k===state.tab)+'" data-k="'+k+'">'+META[k].title+'</button>'}).join('');
+  var it=I[state.tab];
+  if(!it||!it.has_data){$('#interp').innerHTML='<div class="state">No interpretation available for this indicator right now.</div>';return}
+  var rel=(it.relevant_news||[]).map(function(a){return '<li><a href="'+esc(a.url)+'" target="_blank" rel="noopener noreferrer">'+esc(a.title)+'</a><small>'+esc(a.source||'')+' &middot; '+esc(a.published_at||'')+' &middot; '+esc(a.category||'')+'</small></li>'}).join('');
+  $('#interp').innerHTML='<div class="interp"><div><h3>'+esc(it.indicator_name)+': '+esc(it.direction||'')+' in '+esc(it.latest_year)+'</h3>'+
+    '<div class="blk"><h4>What changed</h4><p>'+esc(stripPrefix(it.observed_trend))+'</p></div>'+
+    '<div class="blk"><h4>A possible explanation</h4><p>'+esc(stripPrefix(it.possible_explanation))+'</p></div>'+
+    '<div class="blk"><h4>What this cannot tell you</h4><p class="warn">'+esc(stripPrefix(it.limitations))+'</p></div></div>'+
+    '<div class="blk"><h4>Related headlines</h4>'+(rel?'<ul class="rel">'+rel+'</ul>':'<p>No related headlines matched.</p>')+'<p class="notice" style="color:var(--mist);margin-top:14px">Matched by topic keywords. Dates are shown because some are older than the data year.</p></div></div>';
+}
+
+/* ---------- loading ---------- */
+function loadIndicators(){
+  $('#track').innerHTML=KEYS.map(function(k){return '<article class="card" style="--c:'+META[k].color+'"><div class="skeleton" style="height:40px;width:60%"></div><div class="skeleton" style="height:90px"></div><div class="skeleton" style="height:240px"></div></article>'}).join('');
+  return getJSON('action=indicators&country='+state.country+'&range='+RANGE).then(function(d){
+    state.ind=d.indicators||{};renderStrip();renderCards();renderRegister();refreshST();
+  }).catch(function(e){$('#track').innerHTML=errBox(e.message,'ind');$('#strip').innerHTML='';$('#regwrap').innerHTML=errBox(e.message,'ind');refreshST()});
+}
+function loadNews(){
+  return getJSON('action=news').then(function(d){state.news=d;state.shown=12;renderTopics();renderNews()}).catch(function(e){$('#topics').innerHTML='';$('#newslist').innerHTML=errBox(e.message,'news')});
+}
+function loadInterp(){
+  $('#interp').innerHTML='<div class="skeleton" style="height:300px;opacity:.3"></div>';
+  return getJSON('action=interpret&country='+state.country+'&range='+RANGE).then(function(d){state.interp=d.interpretations||{};renderTabs()}).catch(function(e){$('#interp').innerHTML=errBox(e.message,'interp')});
+}
+document.addEventListener('click',function(e){
+  var r=e.target.closest('[data-retry]');
+  if(r){var w=r.dataset.retry;if(w==='ind')loadIndicators();if(w==='news')loadNews();if(w==='interp')loadInterp();return}
+  var t=e.target.closest('#topics button');if(t){state.topic=t.dataset.t;state.shown=12;renderTopics();renderNews();refreshST();return}
+  var b=e.target.closest('#tabs button');if(b){state.tab=b.dataset.k;renderTabs();return}
+  if(e.target.id==='more'){state.shown+=12;renderNews();refreshST()}
+});
+$('#country').addEventListener('change',function(e){state.country=e.target.value;$('#op-country').textContent=COUNTRIES[state.country];loadIndicators();loadInterp()});
+
+/* ---------- motion (GSAP + Lenis, as in the template) ---------- */
+var refreshST=function(){};
+function motion(){
+  if(!window.gsap||!window.ScrollTrigger||reduce){return}
+  gsap.registerPlugin(ScrollTrigger);
+  refreshST=function(){clearTimeout(refreshST.t);refreshST.t=setTimeout(function(){ScrollTrigger.refresh()},150)};
+  if(window.Lenis){
+    var lenis=new Lenis({lerp:.1});
+    lenis.on('scroll',ScrollTrigger.update);
+    gsap.ticker.add(function(t){lenis.raf(t*1000)});gsap.ticker.lagSmoothing(0);
+  }
+  gsap.from('#opening h1 .line span',{yPercent:110,duration:1.1,ease:'power4.out',stagger:.12,delay:.1});
+  gsap.from('.slabs b',{scaleY:0,duration:1.2,ease:'power3.out',stagger:.09,delay:.2});
+  gsap.from('#opening .sub,#opening .eyebrow,#strip,.scrollcue',{opacity:0,y:20,duration:.9,stagger:.1,delay:.6});
+  gsap.utils.toArray('.eyebrow,.h2,.lead,.cols div,.topics').forEach(function(el){
+    if(el.closest('#opening'))return;
+    gsap.from(el,{opacity:0,y:30,duration:.8,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 88%',once:true}});
+  });
+  var mm=gsap.matchMedia();
+  mm.add('(min-width:900px)',function(){
+    var sec=$('#indicators'),pin=$('.pin',sec),track=$('#track');
+    sec.setAttribute('data-walk','');
+    var dist=function(){return Math.max(0,track.scrollWidth-window.innerWidth)};
+    gsap.to(track,{x:function(){return -dist()},ease:'none',scrollTrigger:{trigger:pin,start:'top top',end:function(){return '+='+dist()},pin:true,scrub:.6,invalidateOnRefresh:true,anticipatePin:1}});
+    return function(){sec.removeAttribute('data-walk')};
+  });
+  window.addEventListener('load',function(){ScrollTrigger.refresh()});
+}
+window.addEventListener('scroll',function(){$('#nav').classList.toggle('solid',window.scrollY>40)},{passive:true});
+motion();
+loadIndicators();loadNews();loadInterp();
+})();
+</script>
+</body>
+</html>
