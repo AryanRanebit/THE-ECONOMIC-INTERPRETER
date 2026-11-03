@@ -42,6 +42,16 @@ from modules.sentiment import add_sentiment_scores, aggregate_mood, overall_mood
 from modules.text_processing import categorize_dataframe_tfidf
 
 
+
+# ---------------------------------------------------------------------------
+# TEMPORARY DEMO SWITCH (revert this block to restore the backend)
+# Disconnects the frontend from the backend: every API action returns
+# 503 so the site shows its offline/"could not load" state. No data or
+# code is removed; set BACKEND_DISCONNECTED = False (or revert the commit)
+# to restore normal live data.
+# ---------------------------------------------------------------------------
+BACKEND_DISCONNECTED = True
+
 def clean_for_json(obj):
     """Recursively sanitize NumPy/Pandas types and NaN values for standard JSON."""
     if isinstance(obj, dict):
@@ -89,6 +99,12 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        if BACKEND_DISCONNECTED:
+            self._send_json_response(503, {
+                "error": "Backend temporarily disconnected",
+                "details": "The API is switched off for the demo. Revert the BACKEND_DISCONNECTED flag in api/index.py to restore live data."
+            })
+            return
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
 
