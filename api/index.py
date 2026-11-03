@@ -50,7 +50,7 @@ from modules.text_processing import categorize_dataframe_tfidf
 # code is removed; set BACKEND_DISCONNECTED = False (or revert the commit)
 # to restore normal live data.
 # ---------------------------------------------------------------------------
-BACKEND_DISCONNECTED = True
+BACKEND_DISCONNECTED = False
 
 def clean_for_json(obj):
     """Recursively sanitize NumPy/Pandas types and NaN values for standard JSON."""
