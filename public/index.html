@@ -18,9 +18,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Mozilla+Headline:wght@500..700&family=Mozilla+Text:wght@400..700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --sky:#f5dde2; --ink:#1a2430; --paper:#f3eeed; --rust:#b9471f; --sand:#e7a36a; --teal:#3f6964;
-  --blue:#26419b; --red:#d22630; --white:#fff; --slate:#475463; --mist:#a9c1dd; --blush:#e6dad8;
+  --sky:#f6f4ef; --ink:#1a2430; --paper:#f1ede4; --rust:#b9471f; --sand:#e7a36a; --teal:#3f6964;
+  --blue:#26419b; --red:#d22630; --white:#fff; --slate:#475463; --mist:#a9c1dd; --blush:#e9e4d8;
   --ochre:#b87a1e; --plum:#6a4d8f;
+  --rb-red:#d22630; --rb-orange:#d96a1e; --rb-gold:#b8860b; --rb-yellow:#e5a800; --rb-green:#1f7a4d;
+  --rb-blue:#26419b; --rb-violet:#6a4d8f; --rb-orange-l:#f2994a; --rb-green-l:#7bc796; --rb-indigo-l:#8fa3e8;
+  --rainbow:linear-gradient(90deg,#d22630,#d96a1e,#e5a800,#1f7a4d,#26419b,#6a4d8f);
   --head:"Mozilla Headline","Arial Narrow",Arial,sans-serif;
   --text:"Mozilla Text",Arial,sans-serif;
   --pad:clamp(20px,4vw,64px);
@@ -49,9 +52,10 @@ section{position:relative}
 
 /* nav */
 header.nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px var(--pad);mix-blend-mode:normal;transition:background .3s,color .3s}
-header.nav.solid{background:rgba(245,221,226,.88);backdrop-filter:blur(10px);box-shadow:0 1px 0 rgba(26,36,48,.12)}
+header.nav::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--rainbow)}
+header.nav.solid{background:rgba(246,244,239,.88);backdrop-filter:blur(10px);box-shadow:0 1px 0 rgba(26,36,48,.12)}
 .brand{font-family:var(--head);font-stretch:75%;font-weight:700;font-size:28px;line-height:1;text-decoration:none;letter-spacing:.01em}
-.brand i{font-style:normal;color:var(--rust)}
+.brand i{font-style:normal;background:var(--rainbow);-webkit-background-clip:text;background-clip:text;color:transparent}
 .nav-links{display:flex;gap:26px;align-items:center}
 .nav-links a{font-size:14px;font-weight:600;text-decoration:none;opacity:.8;white-space:nowrap}
 .nav-links a:hover{opacity:1;text-decoration:underline;text-underline-offset:4px}
@@ -77,16 +81,16 @@ header.nav.solid{background:rgba(245,221,226,.88);backdrop-filter:blur(10px);box
 
 /* opening */
 #opening{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:120px var(--pad) 40px;overflow:hidden}
-#opening .eyebrow{color:var(--rust);margin-bottom:22px}
+#opening .eyebrow{color:var(--rb-red);margin-bottom:22px}
 #opening h1 .line{display:block;overflow:hidden}
 #opening h1 .line span{display:block}
 #opening .sub{margin-top:28px;max-width:52ch;color:var(--slate);font-size:clamp(17px,1.2vw + 11px,21px)}
 .slabs{position:absolute;right:var(--pad);top:120px;bottom:290px;width:min(34vw,420px);display:flex;gap:12px;align-items:flex-end;pointer-events:none}
-.slabs b{flex:1;background:var(--ink);transform-origin:bottom;display:block}
-.slabs b:nth-child(2){background:var(--rust)}
-.slabs b:nth-child(3){background:var(--teal)}
-.slabs b:nth-child(4){background:var(--sand)}
-.slabs b:nth-child(5){background:var(--blue)}
+.slabs b{flex:1;background:var(--rb-red);transform-origin:bottom;display:block}
+.slabs b:nth-child(2){background:var(--rb-yellow)}
+.slabs b:nth-child(3){background:var(--rb-green)}
+.slabs b:nth-child(4){background:var(--rb-blue)}
+.slabs b:nth-child(5){background:var(--rb-violet)}
 @media(max-width:820px){
   #opening{padding-top:96px}
   .slabs{position:static;order:-1;align-self:flex-end;width:min(100%,360px);height:clamp(88px,13svh,132px);margin:0 0 28px;opacity:.95}
@@ -153,7 +157,7 @@ header.nav.solid{background:rgba(245,221,226,.88);backdrop-filter:blur(10px);box
 #register .tablewrap{overflow-x:auto;margin-top:40px;border-top:2px solid var(--paper)}
 table{width:100%;border-collapse:collapse;min-width:520px}
 th,td{text-align:left;padding:14px 12px 14px 0;border-bottom:1px solid rgba(243,238,237,.18);font-variant-numeric:tabular-nums}
-th{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--sand);font-weight:600}
+th{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--rb-orange-l);font-weight:600}
 td.y{font-family:var(--head);font-stretch:75%;font-weight:650;font-size:26px}
 td.na{color:var(--mist);opacity:.6}
 tr:hover td{background:rgba(243,238,237,.05)}
@@ -162,13 +166,13 @@ tr:hover td{background:rgba(243,238,237,.05)}
 #compare .ccontrols{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;margin-top:36px;font-size:14px;font-weight:600}
 #compare .ccontrols .clabel{display:flex;align-items:center;gap:10px}
 #compare .csubtitle{margin-top:26px;font-size:14px;color:var(--slate);max-width:70ch}
-#compare .cpanel{margin-top:18px;background:var(--paper);padding:26px 28px;border-top:6px solid var(--rust);transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s ease}
+#compare .cpanel{margin-top:18px;background:var(--paper);padding:26px 28px;border-top:6px solid;border-image:linear-gradient(90deg,#d22630,#d96a1e,#e5a800,#1f7a4d,#26419b,#6a4d8f) 1;transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s ease}
 #compare .cpanel:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(26,36,48,.12)}
 #compare .legend{display:flex;gap:26px;flex-wrap:wrap;margin:14px 0 4px;font-size:13px;font-weight:600;color:var(--slate)}
 #compare .legend i{display:inline-block;width:22px;height:3px;background:var(--c);vertical-align:middle;margin-right:8px}
 #compare .legend .dash i{background:repeating-linear-gradient(90deg,var(--c) 0 5px,transparent 5px 9px)}
 #compare .tablewrap{overflow-x:auto;margin-top:22px;border-top:2px solid var(--ink)}
-#compare th{color:var(--rust)}
+#compare th{color:var(--rb-gold)}
 #compare td,#compare th{border-bottom:1px solid rgba(26,36,48,.16)}
 #compare tr:hover td{background:rgba(26,36,48,.04)}
 #compare td.y{font-size:20px}
@@ -235,7 +239,7 @@ tr:hover td{background:rgba(243,238,237,.05)}
 
 /* footer */
 footer{padding:48px var(--pad) 28px;overflow:hidden}
-footer .mark{font-family:var(--head);font-stretch:75%;font-weight:700;line-height:.82;letter-spacing:-.01em;font-size:clamp(56px,15.5vw,260px);white-space:nowrap;color:var(--sand);display:block}
+footer .mark{font-family:var(--head);font-stretch:75%;font-weight:700;line-height:.82;letter-spacing:-.01em;font-size:clamp(56px,15.5vw,260px);white-space:nowrap;background:linear-gradient(90deg,#ff7a6e,#f2994a,#e5a800,#7bc796,#8fa3e8,#b48fd6);-webkit-background-clip:text;background-clip:text;color:transparent;display:block}
 footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:28px;font-size:13px;color:var(--mist)}
 
 /* states */
@@ -282,7 +286,7 @@ footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap
   .secno{display:none!important}
   .newslist a,.newslist{break-inside:avoid}
   td,th{border-color:#ccc!important}
-  #compare .cpanel{border:1px solid #ddd;border-top:6px solid var(--rust);box-shadow:none}
+  #compare .cpanel{border:1px solid #ddd;border-top:6px solid #999;border-image:none;box-shadow:none}
 }
 /* visual hierarchy: ghost section numerals, hero stats, tonal separation */
 .secno{position:absolute;top:calc(var(--gap)*.35);right:var(--pad);font-family:var(--head);font-stretch:75%;font-weight:700;font-size:clamp(110px,16vw,240px);line-height:.8;color:var(--ink);opacity:.055;pointer-events:none;user-select:none}
@@ -333,7 +337,7 @@ footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap
   <span class="secno" aria-hidden="true">01</span>
   <div class="pin">
     <div class="head">
-      <div><p class="eyebrow" style="color:var(--rust)">01 - The numbers</p><h2 id="in-title" class="h2">Six indicators,<br>one country.</h2></div>
+      <div><p class="eyebrow" style="color:var(--rb-red)">01 - The numbers</p><h2 id="in-title" class="h2">Six indicators,<br>one country.</h2></div>
       <p class="lead">Each chart shows one yearly value per year, straight from the World Bank. Hover or tap a point to read it.</p>
     </div>
     <div class="track" id="track"></div>
@@ -343,7 +347,7 @@ footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap
 <section id="register" data-tone="dark" aria-labelledby="rg-title">
   <span class="secno" aria-hidden="true">02</span>
   <div class="wrap">
-    <p class="eyebrow" style="color:var(--sand)">02 - Year by year</p>
+    <p class="eyebrow" style="color:var(--rb-orange-l)">02 - Year by year</p>
     <h2 id="rg-title" class="h2" style="margin-top:14px">The register.</h2>
     <p class="lead" style="margin-top:18px">All six indicators side by side. A dash means the World Bank has not published that year yet.</p>
     <div class="tablewrap" id="regwrap"><div class="skeleton" style="height:260px"></div></div>
@@ -353,7 +357,7 @@ footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap
 <section id="compare" aria-labelledby="cp-title">
   <span class="secno" aria-hidden="true">03</span>
   <div class="wrap">
-    <p class="eyebrow" style="color:var(--rust)">03 - Side by side</p>
+    <p class="eyebrow" style="color:var(--rb-gold)">03 - Side by side</p>
     <h2 id="cp-title" class="h2" style="margin-top:14px">Two economies,<br>one ruler.</h2>
     <p class="lead" style="margin-top:18px">Put another country next to <b id="cmpAname">India</b>. Same indicators, only genuinely recorded World Bank observations - a gap is a missing year, never an invented number.</p>
     <div class="ccontrols">
@@ -375,14 +379,14 @@ footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap
 <section id="analytics" data-tone="dark" aria-labelledby="an-title">
   <span class="secno" aria-hidden="true">04</span>
   <div class="wrap">
-    <p class="eyebrow" style="color:var(--sand)">04 - The analytics suite</p>
+    <p class="eyebrow" style="color:var(--rb-green-l)">04 - The analytics suite</p>
     <h2 id="an-title" class="h2" style="margin-top:14px">Four honest lenses.</h2>
     <p class="lead" style="margin-top:18px">Deterministic, fully transparent analyses - fixed rules and published lexicons, no AI and no black boxes. The same methods run in the Streamlit app.</p>
     <div class="agrid" id="agrid">
-      <article class="acard" style="--c:var(--sand)" id="a-pulse"><h4>News Pulse</h4><p class="adesc">Reads the tone of every headline with the published VADER lexicon - offline and deterministic.</p><div class="abody" id="body-pulse"><div class="skeleton" style="height:120px;opacity:.3"></div></div></article>
-      <article class="acard" style="--c:var(--red)" id="a-shock"><h4>Shock Radar</h4><p class="adesc">Flags years where an indicator moved unusually sharply versus its own history (a z-score rule).</p><div class="abody" id="body-shock"><div class="skeleton" style="height:120px;opacity:.3"></div></div></article>
-      <article class="acard" style="--c:var(--mist)" id="a-outlook"><h4>Outlook Engine</h4><p class="adesc">Extends each indicator's straight-line trend a few years forward. Illustrative only, never a prediction.</p><div class="abody" id="body-outlook"><div class="skeleton" style="height:120px;opacity:.3"></div></div></article>
-      <article class="acard" style="--c:var(--teal)" id="a-lens"><h4>LinkLens</h4><p class="adesc">Checks whether news tone and indicator changes move together over genuinely overlapping years. Correlation is not causation.</p><div class="abody" id="body-lens"><div class="skeleton" style="height:120px;opacity:.3"></div></div></article>
+      <article class="acard" style="--c:#f2994a" id="a-pulse"><h4>News Pulse</h4><p class="adesc">Reads the tone of every headline with the published VADER lexicon - offline and deterministic.</p><div class="abody" id="body-pulse"><div class="skeleton" style="height:120px;opacity:.3"></div></div></article>
+      <article class="acard" style="--c:#ff7a6e" id="a-shock"><h4>Shock Radar</h4><p class="adesc">Flags years where an indicator moved unusually sharply versus its own history (a z-score rule).</p><div class="abody" id="body-shock"><div class="skeleton" style="height:120px;opacity:.3"></div></div></article>
+      <article class="acard" style="--c:#8fa3e8" id="a-outlook"><h4>Outlook Engine</h4><p class="adesc">Extends each indicator's straight-line trend a few years forward. Illustrative only, never a prediction.</p><div class="abody" id="body-outlook"><div class="skeleton" style="height:120px;opacity:.3"></div></div></article>
+      <article class="acard" style="--c:#7bc796" id="a-lens"><h4>LinkLens</h4><p class="adesc">Checks whether news tone and indicator changes move together over genuinely overlapping years. Correlation is not causation.</p><div class="abody" id="body-lens"><div class="skeleton" style="height:120px;opacity:.3"></div></div></article>
     </div>
   </div>
 </section>
@@ -390,7 +394,7 @@ footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap
 <section id="news" aria-labelledby="nw-title">
   <span class="secno" aria-hidden="true">05</span>
   <div class="wrap">
-    <p class="eyebrow" style="color:var(--rust)">05 - The headlines</p>
+    <p class="eyebrow" style="color:var(--rb-blue)">05 - The headlines</p>
     <h2 id="nw-title" class="h2" style="margin-top:14px">What the news says.</h2>
     <p class="lead" style="margin-top:18px">Headlines are pulled live and sorted into topics by simple keyword matching, with each article's key terms extracted by TF-IDF. Topics are a rough guide, not a verdict.</p>
     <div class="topics" id="topics" role="group" aria-label="Filter by topic"></div>
@@ -403,7 +407,7 @@ footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap
 <section id="interpretation" data-tone="dark" aria-labelledby="ip-title">
   <span class="secno" aria-hidden="true">06</span>
   <div class="wrap">
-    <p class="eyebrow" style="color:var(--sand)">06 - Interpretation</p>
+    <p class="eyebrow" style="color:var(--rb-indigo-l)">06 - Interpretation</p>
     <h2 id="ip-title" class="h2" style="margin-top:14px">What it might mean.</h2>
     <p class="lead" style="margin-top:18px">For each indicator: what changed, a possible explanation, and what this analysis cannot tell you.</p>
     <div class="tabs" id="tabs" role="tablist" aria-label="Indicator"></div>
@@ -414,7 +418,7 @@ footer .small{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap
 <section id="method" aria-labelledby="mt-title">
   <span class="secno" aria-hidden="true">07</span>
   <div class="wrap">
-    <p class="eyebrow" style="color:var(--rust)">07 - About the data</p>
+    <p class="eyebrow" style="color:var(--rb-violet)">07 - About the data</p>
     <h2 id="mt-title" class="h2" style="margin-top:14px">Honest by design.</h2>
     <div class="cols">
       <div><h4>Yearly, not monthly</h4><p>World Bank indicators are annual. The latest year is often a preliminary estimate and gets revised. Nothing here is estimated between years.</p></div>
@@ -442,11 +446,11 @@ var API=(new URLSearchParams(location.search).get('api'))||'/api';
 var RANGE='2010:2025';
 var COUNTRIES={IN:'India',US:'United States',CN:'China',GB:'United Kingdom',DE:'Germany',JP:'Japan',AE:'United Arab Emirates',SG:'Singapore'};
 var META={
-  inflation:{n:'01',title:'Inflation',color:'#b9471f',badWhenUp:true,desc:'How fast everyday prices rise, per year. Lower and steady is easier on households.'},
-  unemployment:{n:'02',title:'Unemployment',color:'#26419b',badWhenUp:true,desc:'Share of people who want work but cannot find it. Rising numbers signal a weaker job market.'},
-  gdp_growth:{n:'03',title:'GDP growth',color:'#3f6964',badWhenUp:false,desc:'How much the whole economy grew compared with the year before. Negative means it shrank.'},
-  gdp_per_capita_growth:{n:'04',title:'GDP per capita',color:'#d22630',badWhenUp:false,desc:'Growth of output per person, per year. A rough proxy for whether average living standards are rising.'},
-  exports_gdp:{n:'05',title:'Exports',color:'#b87a1e',badWhenUp:false,desc:'Everything sold to the rest of the world, as a share of the whole economy. Shows how much foreign demand matters.'},
+  inflation:{n:'01',title:'Inflation',color:'#d22630',badWhenUp:true,desc:'How fast everyday prices rise, per year. Lower and steady is easier on households.'},
+  unemployment:{n:'02',title:'Unemployment',color:'#d96a1e',badWhenUp:true,desc:'Share of people who want work but cannot find it. Rising numbers signal a weaker job market.'},
+  gdp_growth:{n:'03',title:'GDP growth',color:'#b8860b',badWhenUp:false,desc:'How much the whole economy grew compared with the year before. Negative means it shrank.'},
+  gdp_per_capita_growth:{n:'04',title:'GDP per capita',color:'#1f7a4d',badWhenUp:false,desc:'Growth of output per person, per year. A rough proxy for whether average living standards are rising.'},
+  exports_gdp:{n:'05',title:'Exports',color:'#26419b',badWhenUp:false,desc:'Everything sold to the rest of the world, as a share of the whole economy. Shows how much foreign demand matters.'},
   fdi_inflows_gdp:{n:'06',title:'FDI inflows',color:'#6a4d8f',badWhenUp:false,desc:'Long-term foreign investment entering the country, as a share of GDP.'}
 };
 var KEYS=['inflation','unemployment','gdp_growth','gdp_per_capita_growth','exports_gdp','fdi_inflows_gdp'];
@@ -711,7 +715,7 @@ function renderCompare(){
     return '<tr><td>'+esc(m.name||k)+' <small style="color:var(--slate)">'+esc(m.unit||'')+'</small></td><td class="cmpnum">'+cA+'</td><td class="cmpnum">'+cB+'</td></tr>';
   }).join('');
   body.innerHTML='<div class="cpanel">'+chart+
-    '<div class="legend"><span style="--c:#b9471f"><i></i>'+esc(nameA)+'</span><span class="dash" style="--c:#26419b"><i></i>'+esc(nameB)+' (dashed)</span></div>'+
+    '<div class="legend"><span style="--c:#d22630"><i></i>'+esc(nameA)+'</span><span class="dash" style="--c:#26419b"><i></i>'+esc(nameB)+' (dashed)</span></div>'+
     '<div class="tablewrap"><table><thead><tr><th>Indicator</th><th class="cmpnum">'+esc(nameA)+'</th><th class="cmpnum">'+esc(nameB)+'</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
     '<p class="notice" style="margin-top:14px">Each value carries its own reporting year - the latest available year can differ between countries.</p></div>';
   var svg=$('.cpanel .chart',body);
